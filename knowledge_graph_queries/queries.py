@@ -1,4 +1,4 @@
-{
+QUERIES = {
     'poeticWorks':
     '''
         PREFIX kos: <http://postdata.linhd.uned.es/kos/>
