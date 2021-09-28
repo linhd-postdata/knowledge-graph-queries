@@ -21,8 +21,10 @@ def get_poeticWorks():
 def get_poeticWork(title, limit=10):
     """ Method corresponding to the PoeticWork endpoint
 
-    :param: title: title of poeticWork to retrieve, limit: max number of retrieved elements
-    :type: title: str, limit: int
+    :param title: title of poeticWork to retrieve
+    :type title: str
+    :param limit: max number of retrieved elements
+    :type limit: int
     :return: JSON with the list of poeticWorks with matching title in the knowledge graph
     """
     title = unquote(title)
@@ -46,9 +48,11 @@ def get_authors():
 def get_author(name, limit=10):
     """ Method corresponding to the author endpoint
 
-    :param: name: name of the author, limit: max number of retrieved elements
-    :type: name: str, limit: int
-    :return: JSON with the list of all authors with matching names in the knowledge graph
+    :param name: name of the author,
+    :type name: str
+    :param limit: max number of retrieved elements
+    :type  limit: int
+    :return JSON with the list of all authors with matching names in the knowledge graph
     """
     name = unquote(name)
     conn = get_db()
@@ -72,9 +76,11 @@ def get_manifestations():
 def get_book(title, limit):
     """ Method corresponding to the book endpoint
 
-    :param: title: title of the book, limit: max number of retrieved elements
-    :type: name: str, limit: int
-    :return: JSON with the list of all books with matching titles in the knowledge graph
+    :param title: title of the book
+    :type title: str
+    :param limit: max number of retrieved elements
+    :type limit: int
+    :return JSON with the list of all books with matching titles in the knowledge graph
     """
     # title = unquote(title)
     # conn = get_db()
@@ -85,6 +91,10 @@ def get_book(title, limit):
 
 
 def connect_to_database():
+    """ Establish connection with knowledge graph
+
+    :return: stardog.Connection with knowledge graph
+    """
     connection_details = {
         'endpoint': 'http://62.204.199.252:5820',
         'username': 'admin',
@@ -99,11 +109,20 @@ def connect_to_database():
 
 
 def get_db():
+    """ Checks if the connection in the application context (request) is established,
+    if yes returns existing connection, if not creates a new connection and returns it
+
+    :return: existing or new stardog.Connection with knowledge graph
+    """
     if 'db' not in g:
         g.db = connect_to_database()
     return g.db
 
 
 def process_jsonld(results):
+    """ decode bytes-like objet into valid JSON format
+
+    :return: data in valid JSON format
+    """
     results = results.decode('utf8').replace("'", '"')
     return json.loads(results)
