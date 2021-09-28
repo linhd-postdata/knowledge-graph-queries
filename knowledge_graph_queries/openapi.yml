@@ -1,0 +1,133 @@
+openapi: "3.0.1"
+info:
+  title: POSTDATA knowledge graph query system
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: "0.0.1"
+servers:
+  - url: /
+    description: Production server
+  - url: http://localhost:5000/
+    description: Test server
+paths:
+  /poeticWorks:
+    get:
+      summary: List of all the poeticWorks
+      description: Gets list of all the poeticWorks
+      operationId: core.get_poeticWorks
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                example: { "head": { "vars": [ "work", "title", "creator", "date" ] }, "results": { "bindings": [ { "creator": { "type": "literal", "value": "Juana Inés de la Cruz", "xml:lang": "es" }, "title": { "type": "literal", "value": "A estos peñascos rudos", "xml:lang": "es" }, "work": { "type": "uri", "value": "http://postdata.linhd.uned.es/resource/pw_juana-ines-de-la-cruz_a-estos-penascos-rudos" } }, { "creator": { "type": "literal", "value": "Antonio Enríquez Gómez", "xml:lang": "es" }, "title": { "type": "literal", "value": "Al son de este arroyuelo, cüyo ronco", "xml:lang": "es" }, "work": { "type": "uri", "value": "http://postdata.linhd.uned.es/resource/pw_antonio-enriquez-gomez_al-son-de-este-arroyuelo-cuyo-ronco" } }, { "creator": { "type": "literal", "value": "Juana Inés de la Cruz", "xml:lang": "es" }, "title": { "type": "literal", "value": "Amado dueño mío", "xml:lang": "es" }, "work": { "type": "uri", "value": "http://postdata.linhd.uned.es/resource/pw_juana-ines-de-la-cruz_amado-dueno-mio" } }, { "creator": { "type": "literal", "value": "Juana Inés de la Cruz", "xml:lang": "es" }, "title": { "type": "literal", "value": "Amante dulce del alma", "xml:lang": "es" }, "work": { "type": "uri", "value": "http://postdata.linhd.uned.es/resource/pw_juana-ines-de-la-cruz_amante-dulce-del-alma" } } ] } }
+
+  /authors:
+    get:
+      summary: List of all the poeticWorks
+      description: Gets list of all the poeticWorks
+      operationId: core.get_authors
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                example: { "head": { "vars": [ "person", "name", "deathDate", "birthDate" ] }, "results": { "bindings": [ { "name": { "type": "literal", "value": "Juana Inés de la Cruz", "xml:lang": "es" }, "person": { "type": "uri", "value": "http://postdata.linhd.uned.es/resource/p_juana-ines-de-la-cruz" } }, { "name": { "type": "literal", "value": "Antonio Enríquez Gómez", "xml:lang": "es" }, "person": { "type": "uri", "value": "http://postdata.linhd.uned.es/resource/p_antonio-enriquez-gomez" } } ] } }
+
+  /manifestations:
+    get:
+      summary: List of all the manifestations
+      description: Gets list of all the manifestations
+      operationId: core.get_manifestations
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                example: { }
+
+  /author/{name}:
+    get:
+      description: Given an author obtain all the data about the author
+      summary: Given an author obtain all the data about the author
+      operationId: core.get_author
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                example: { "@context": { "fts": "tag:stardog:api:search:", "pdc": "http://postdata.linhd.uned.es/ontology/postdata-core#" }, "@graph": [ { "@id": "http://postdata.linhd.uned.es/resource/p_antonio-enriquez-gomez", "pdc:name": { "@language": "es", "@value": "Antonio Enríquez Gómez" }, "pdc:score": { "@value": 1 } } ] }
+    parameters:
+      - name: name
+        in: path
+        description: Name of the author
+        required: true
+        schema:
+          type: string
+        style: simple
+      - name: limit
+        required: false
+        description: Maximum number of results
+        in: query
+        schema:
+          type: integer
+
+
+  /book/{title}:
+    get:
+      summary: Given a book obtain the poetic works
+      description: Obtain all the data about the book
+      operationId: core.get_book
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                example: { }
+      parameters:
+        - name: title
+          in: path
+          description: Title of the book
+          required: true
+          schema:
+            type: string
+          style: simple
+
+  /poeticWork/{title}:
+    get:
+      summary: Given a poetic work obtain all the expresions (redactions) of a poetic work and infor about author and books
+      description: Given a poetic work obtain all the expresions (redactions) of a poetic work and infor about author and books
+      operationId: core.get_poeticWork
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                example: { "@context": { "fts": "tag:stardog:api:search:", "kos": "http://postdata.linhd.uned.es/kos/", "pdc": "http://postdata.linhd.uned.es/ontology/postdata-core#" }, "@graph": [ { "@id": "http://postdata.linhd.uned.es/resource/pw_juana-ines-de-la-cruz_a-estos-penascos-rudos", "pdc:author": { "@language": "es", "@value": "Juana Inés de la Cruz" }, "pdc:name": { "@language": "es", "@value": "A estos peñascos rudos" }, "pdc:score": { "@value": 1 } } ] }
+      parameters:
+        - name: title
+          in: path
+          description: Name of the poeticWork
+          required: true
+          schema:
+            type: string
+          style: simple
+        - name: limit
+          required: false
+          description: Maximum number of results
+          in: query
+          schema:
+            type: integer
