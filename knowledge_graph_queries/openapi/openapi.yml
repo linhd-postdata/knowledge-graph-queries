@@ -15,7 +15,7 @@ paths:
     get:
       summary: List of all the poeticWorks
       description: Gets list of all the poeticWorks
-      operationId: core.get_poeticWorks
+      operationId: knowledge_graph_queries.get_poeticWorks
       responses:
         200:
           description: OK
@@ -27,9 +27,9 @@ paths:
 
   /authors:
     get:
-      summary: List of all the poeticWorks
-      description: Gets list of all the poeticWorks
-      operationId: core.get_authors
+      summary: List of all the authors
+      description: Gets list of all the authors
+      operationId: knowledge_graph_queries.get_authors
       responses:
         200:
           description: OK
@@ -43,7 +43,7 @@ paths:
     get:
       summary: List of all the manifestations
       description: Gets list of all the manifestations
-      operationId: core.get_manifestations
+      operationId: knowledge_graph_queries.get_manifestations
       responses:
         200:
           description: OK
@@ -57,7 +57,7 @@ paths:
     get:
       description: Given an author obtain all the data about the author
       summary: Given an author obtain all the data about the author
-      operationId: core.get_author
+      operationId: knowledge_graph_queries.get_author
       responses:
         200:
           description: OK
@@ -86,7 +86,7 @@ paths:
     get:
       summary: Given a book obtain the poetic works
       description: Obtain all the data about the book
-      operationId: core.get_book
+      operationId: knowledge_graph_queries.get_book
       responses:
         200:
           description: OK
@@ -108,7 +108,7 @@ paths:
     get:
       summary: Given a poetic work obtain all the expresions (redactions) of a poetic work and infor about author and books
       description: Given a poetic work obtain all the expresions (redactions) of a poetic work and infor about author and books
-      operationId: core.get_poeticWork
+      operationId: knowledge_graph_queries.get_poeticWork
       responses:
         200:
           description: OK
