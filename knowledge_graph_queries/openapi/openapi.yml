@@ -55,8 +55,8 @@ paths:
 
   /author/{name}:
     get:
-      description: Given an author obtain all the data about the author
-      summary: Given an author obtain all the data about the author
+      description: Search authors by name
+      summary: Returns URIs for author resources whose name matches with query
       operationId: knowledge_graph_queries.get_author
       responses:
         200:
@@ -81,6 +81,27 @@ paths:
         schema:
           type: integer
 
+  /author_profile/{uri}:
+    get:
+      description: Get all the information related to an author
+      summary: Provides personal information and associated works given the URI of an author
+      operationId: knowledge_graph_queries.get_author_profile
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+    parameters:
+      - name: "uri"
+        in: path
+        description: The URI of an author resource
+        required: true
+        schema:
+          type: string
+          format: path
+        style: simple
 
   /book/{title}:
     get:
@@ -131,3 +152,69 @@ paths:
           in: query
           schema:
             type: integer
+
+  /redactions/{uri}:
+    get:
+      description: Get all the information related to the editions of a poetic work
+      summary: Provides textual information and poetic analysis annotations for the textual editions of a poetic work
+      operationId: knowledge_graph_queries.get_redactions
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+    parameters:
+      - name: "uri"
+        in: path
+        description: The URI of a poetic work resource
+        required: true
+        schema:
+          type: string
+          format: path
+        style: simple
+
+  /scansion_structure/{uri}:
+    get:
+      description: Gets the basic structure of the scansions available for a given redaction
+      summary: For each scansion, provides structural information for stanzas and lines as well as pattern iormation for the redaction, stanzas and lines
+      operationId: knowledge_graph_queries.get_scansion_structure
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+    parameters:
+      - name: "uri"
+        in: path
+        description: The URI of a redaction resource
+        required: true
+        schema:
+          type: string
+          format: path
+        style: simple
+
+  /scansion_line/{uri}:
+    get:
+      description: Gets detailed structure of a scanned line, including words and more granular units such grammatical syllables, metrical syllables, morae and feet.
+      summary: Given a line, returns scansion information related to its constituents
+      operationId: knowledge_graph_queries.get_scansion_line
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+    parameters:
+      - name: "uri"
+        in: path
+        description: The URI of a line resource
+        required: true
+        schema:
+          type: string
+          format: path
+        style: simple

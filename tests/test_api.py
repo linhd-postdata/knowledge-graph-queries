@@ -15,4 +15,3 @@ def test_get_authors(snapshot, client):
     response = client.get('/authors')
     assert response.status_code == 200
     snapshot.assert_match(json.loads(response.data))
-

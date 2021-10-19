@@ -1,10 +1,10 @@
 #!/usr/bin/python
 import stardog
-from flask import g
+from flask import g, current_app
 from urllib.parse import unquote
 import json
-
-from knowledge_graph_queries.queries import QUERIES
+from pyld import jsonld
+from knowledge_graph_queries.queries import QUERIES, CONTEXT
 
 
 def get_poeticWorks():
@@ -31,7 +31,10 @@ def get_poeticWork(title, limit=10):
     conn = get_db()
     query = QUERIES['poeticWork'].replace('$*', title + '*').replace('$limit', str(limit))
     results = conn.graph(query, content_type=stardog.content_types.LD_JSON)
-    return process_jsonld(results)
+    jsonld_results = json.loads(results, encoding="utf-8")
+    compacted = jsonld.compact(jsonld_results, CONTEXT)
+    # return process_jsonld(results)
+    return compacted
 
 
 def get_authors():
@@ -58,7 +61,110 @@ def get_author(name, limit=10):
     conn = get_db()
     query = QUERIES['author'].replace('$*', name + '*').replace('$limit', str(limit))
     results = conn.graph(query, content_type=stardog.content_types.LD_JSON)
-    return process_jsonld(results)
+    jsonld_results = json.loads(results)
+    compacted = jsonld.compact(jsonld_results, CONTEXT)
+    # return process_jsonld(results)
+    return compacted
+
+
+def get_author_profile(uri):
+    """Method to fetch data related to a given author
+
+    :param uri: the URI of the author resource
+    :type uri: str
+    :return JSON with personal information and associated poetic works
+    """
+    query = QUERIES['author_profile'].replace('$', uri)
+    conn = get_db()
+    results = conn.graph(query, content_type=stardog.content_types.LD_JSON)
+    json_ld_result = json.loads(results)
+    framed = jsonld.frame(json_ld_result,
+        {
+            "http://postdata.linhd.uned.es/ontology/postdata-core#works": {
+                "@embed": "@always"
+            }
+        }
+    )
+    compacted = jsonld.compact(framed, CONTEXT)
+    # print(json.dumps(compacted, indent=2))
+    return compacted
+
+
+def get_redactions(uri):
+    """Method to return all the redactions or editions of a particular poetic
+    work
+
+    :param uri: the URI of the poetic work resource
+    :type uri: str
+    :return JSON with redaction related information including contributor
+    information, textual content and physical editions
+    """
+    query = QUERIES['redactions'].replace('$', uri)
+    print(query)
+    conn = get_db()
+    results = conn.graph(query, content_type=stardog.content_types.LD_JSON)
+    json_ld_result = json.loads(results)
+    print(json.dumps(json_ld_result, indent=2))
+    framed = jsonld.frame(json_ld_result, {
+        "http://postdata.linhd.uned.es/ontology/postdata-core#isRealisedThrough" : {
+            "@embed": "@always"
+        }
+    })
+    compacted = jsonld.compact(framed, CONTEXT)
+    return compacted
+
+
+def get_scansion_structure(uri):
+    """Method to return the basic structure of a particular redaction or
+    edition
+
+    :param uri: the URI of the redaction resource
+    :type uri: str
+    :return JSON with scansion information including stanzas and lines.
+    Pattern information is also provided at redaction, stanza and line levels.
+    """
+    query = QUERIES['scansion_structure'].replace('$', uri)
+    conn = get_db()
+    results = conn.graph(query, content_type=stardog.content_types.LD_JSON)
+    json_ld_result = json.loads(results)
+    print(json.dumps(json_ld_result, indent=2))
+    framed = jsonld.frame(json_ld_result,
+        {
+            "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#hasStanza": {
+                "@embed": "@always",
+            }
+        }
+    )
+    compacted = jsonld.compact(framed, CONTEXT)
+    return compacted
+
+
+def get_scansion_line(uri):
+    """Method to return detailed information for a scanned line
+
+    :param uri: the URI of the line resource
+    :type uri: str
+    :return JSON with scansion information related to the line including
+    punctuation, words, metrical syllables, grammatical syllables, morae and
+    feet whenever applicable
+    """
+    query = QUERIES['scansion_line'].replace('$', uri)
+    conn = get_db()
+    results = conn.graph(query, content_type=stardog.content_types.LD_JSON)
+    json_ld_result = json.loads(results)
+    print(json.dumps(json_ld_result, indent=2))
+    framed = jsonld.frame(json_ld_result, {
+        "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#hasGrammaticalSyllable": {
+        },
+        "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#hasMetricalSyllable":{
+        },
+        "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#hasWord":{
+        },
+        "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#hasPunctuation":{
+        },
+    })
+    compacted = jsonld.compact(framed, CONTEXT)
+    return compacted
 
 
 def get_manifestations():
@@ -96,11 +202,11 @@ def connect_to_database():
     :return: stardog.Connection with knowledge graph
     """
     connection_details = {
-        'endpoint': 'http://62.204.199.252:5820',
+        'endpoint': 'http://localhost:5820',
         'username': 'admin',
-        'password': 'LuckyLuke99',
+        'password': 'admin',
     }
-    database_name = "PD_KG"
+    database_name = "PD_KG_SPA"
     with stardog.Admin(**connection_details) as admin:
         if database_name in [db.name for db in admin.databases()]:
             return stardog.Connection(database_name, **connection_details)

@@ -5,6 +5,9 @@ from .core import get_authors  # noqa
 from .core import get_author  # noqa
 from .core import get_manifestations  # noqa
 from .core import get_book  # noqa
-from .queries import QUERIES
+from .core import get_author_profile
+from .core import get_redactions
+from .core import get_scansion_structure
+from .core import get_scansion_line
+from .queries import QUERIES, CONTEXT
 from .app import app  # noqa
-

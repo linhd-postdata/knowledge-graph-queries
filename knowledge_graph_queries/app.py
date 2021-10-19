@@ -3,7 +3,6 @@ import os
 import connexion
 from flask import g
 
-
 app = connexion.App(__name__, options={"swagger_ui": True})
 
 
@@ -16,4 +15,4 @@ def teardown_db(exception):
 
 
 if __name__ == "__main__":  # pragma: no cover
-    app.run(port=os.environ.get("PORT", 5000), specification_dir='openapi/')
+    app.run(port=os.environ.get("PORT", 5000), specification_dir='./openapi/')
