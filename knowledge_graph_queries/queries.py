@@ -1,25 +1,30 @@
 QUERIES = {
     'poeticWorks':
     '''
-        PREFIX kos: <http://postdata.linhd.uned.es/kos/>
-        PREFIX pdc: <http://postdata.linhd.uned.es/ontology/postdata-core#>
-        SELECT ?work ?title ?creator ?date WHERE {
+PREFIX kos: <http://postdata.linhd.uned.es/kos/>
+PREFIX pdc: <http://postdata.linhd.uned.es/ontology/postdata-core#>
 
-                ?work pdc:title ?title.
-                ?work a pdc:PoeticWork.
+CONSTRUCT{
+    ?work pdc:title ?title;
+        pdc:author ?creator;
+        pdc:date ?date.
+}
 
-                ?creation pdc:initiated ?work;
-                pdc:hasAgentRole ?ag.
-                ?ag pdc:hasAgent ?person;
-                    pdc:roleFunction kos:Creator.
-                ?person pdc:name ?creator.
+WHERE {
+    ?work pdc:title ?title.
+    ?work a pdc:PoeticWork.
 
-                OPTIONAL{
-                    ?creation pdc:hasTimeSpan ?sp.
-                    ?sp pdc:date ?date.
-                }
+    ?creation pdc:initiated ?work;
+    pdc:hasAgentRole ?ag.
+    ?ag pdc:hasAgent ?person;
+        pdc:roleFunction kos:Creator.
+    ?person pdc:name ?creator.
 
-        } ORDER BY ?title
+    OPTIONAL{
+        ?creation pdc:hasTimeSpan ?sp.
+        ?sp pdc:date ?date.
+    }
+} ORDER BY ?title
     ''',
 
     'poeticWork':
@@ -67,19 +72,44 @@ QUERIES = {
     ''',
   'authors':
     '''
-        PREFIX pdc: <http://postdata.linhd.uned.es/ontology/postdata-core#>
-        SELECT DISTINCT ?person ?name ?deathDate ?birthDate
-        WHERE{
-            ?person a pdc:Person;
-                    pdc:name ?name.
+PREFIX pdc: <http://postdata.linhd.uned.es/ontology/postdata-core#>
 
-            OPTIONAL{
-                ?birth pdc:broughtIntoLife ?person;
-                pdc:hasTimeSpan ?deathDate.
-                ?death pdc:wasDeathOf ?person;
-                pdc:hasTimeSpan ?birthDate.
-            }
-        }
+CONSTRUCT {
+    ?person pdc:name ?name;
+        pdc:deathDate ?deathDate;
+        pdc:birthDate ?birthDate;
+        pdc:deathPlace ?deathPlaceLabel;
+        pdc:birthPlace  ?birthPlaceLabel.
+}
+WHERE{
+    ?person a pdc:Person;
+            pdc:name ?name.
+
+    OPTIONAL{
+        ?birth pdc:broughtIntoLife ?person;
+        pdc:hasTimeSpan ?birthSpan.
+        ?birthSpan pdc:date ?birthDate.
+    }
+
+    OPTIONAL{
+        ?death pdc:wasDeathOf ?person;
+        pdc:hasTimeSpan ?deathSpan.
+        ?deathSpan pdc:date ?deathDate.
+    }  
+
+
+    OPTIONAL{
+        ?birth pdc:broughtIntoLife ?person;
+        pdc:tookPlaceAt ?birthPlace.
+        ?birthPlace rdfs:label ?birthPlaceLabel.
+    }
+    
+    OPTIONAL {
+        ?death pdc:wasDeathOf ?person;
+        pdc:tookPlaceAt ?deathPlace.
+        ?deathPlace rdfs:label ?deathPlaceLabel.
+    }
+}
     ''',
     'author':
     '''
@@ -88,13 +118,15 @@ QUERIES = {
 
         CONSTRUCT {
             ?person pdc:score ?score;
-                    pdc:name ?resultText;
+                pdc:name ?resultText;
                 pdc:birthDate ?birthDate;
-                pdc:deathDate ?deathDate.
+                pdc:deathDate ?deathDate;
+                pdc:deathPlace ?deathPlaceLabel;
+                pdc:birthPlace  ?birthPlaceLabel.
+                
         }
-
-        WHERE{
-            SELECT ?person ?score ?resultText ?birthDate ?deathDate WHERE {
+        
+        WHERE {
             ?person pdc:name ?resultText.
             ?person a pdc:Person.
             service fts:textMatch {
@@ -105,26 +137,38 @@ QUERIES = {
                     # fts:limit 10 ;
             }
             OPTIONAL{
-                  ?birth pdc:broughtIntoLife ?person;
-                         pdc:hasTimeSpan ?deathDate.
-                  ?death pdc:wasDeathOf ?person;
-                         pdc:hasTimeSpan ?birthDate.
+                ?birth pdc:broughtIntoLife ?person;
+                pdc:hasTimeSpan ?birthSpan.
+                ?birthSpan pdc:date ?birthDate.
             }
-
+            OPTIONAL{
+                ?death pdc:wasDeathOf ?person;
+                pdc:hasTimeSpan ?deathSpan.
+                ?deathSpan pdc:date ?deathDate.
+            }
+            OPTIONAL{
+                ?birth pdc:broughtIntoLife ?person;
+                pdc:tookPlaceAt ?birthPlace.
+                ?birthPlace rdfs:label ?birthPlaceLabel.
+            }
+            OPTIONAL {
+                ?death pdc:wasDeathOf ?person;
+                pdc:tookPlaceAt ?deathPlace.
+                ?deathPlace rdfs:label ?deathPlaceLabel.
             }
         }
         order by desc(?score)
-        limit $limit
-
+        limit 10
     ''',
     'author_profile':
-    '''# This query returns a set of information for an author
+    '''
+# This query returns a set of information for an author
 # Inlucdes personal information
 # Organisations the person may belong to
 # Poetic works and the number of editions for each work
 
 CONSTRUCT{
-    <$> pdc:portrait ?portrait;
+    ?author pdc:portrait ?portrait;
         pdc:movement ?movement;
         pdc:name ?name;
         pdc:portrait ?portrait;
@@ -140,6 +184,8 @@ CONSTRUCT{
         pdc:deathDate ?deathDate;
         pdc:nationality ?nationality;
         pdc:occupation ?occupation;
+        pdc:birthPlace ?birthPlaceLabel;
+        pdc:deathPlace ?deathPlaceLabel;
         pdc:religiousAffiliation ?religion.
     
     ?poeticWork  pdc:roleFunction ?role;
@@ -148,7 +194,8 @@ CONSTRUCT{
 }
 
 WHERE{
-    <$> pdc:isAgentOf ?agentRole;
+    BIND (<$> AS ?author).
+    ?author pdc:isAgentOf ?agentRole;
         pdc:name ?name.
     
     ?creation pdc:hasAgentRole ?agentRole;
@@ -156,7 +203,7 @@ WHERE{
         a pdc:WorkConception.
     
     ?agentRole pdc:roleFunction ?role;
-        pdc:hasAgent <$>.
+        pdc:hasAgent ?author.
     
     ?poeticWork pdc:title ?title.
     
@@ -166,68 +213,80 @@ WHERE{
     }
             
     OPTIONAL{
-	<$> pdc:wasBorn ?birth.
-    	?birth pdc:hasTimeSpan ?birthDate;
-        pdc:tookPlaceAt ?birthPlace.
+	?author pdc:wasBorn ?birth.
+	    OPTIONAL{
+	        ?birth pdc:hasTimeSpan ?birthSpan.
+	        ?birthSpan pdc:date ?birthDate.
+	    }
+    	OPTIONAL{
+    	    ?birth pdc:tookPlaceAt ?birthPlace.
+            ?birthPlace rdfs:label ?birthPlaceLabel.
+    	}
     }
 
     OPTIONAL{
-	<$> pdc:diedIn ?death.    
-    	?death pdc:hasTimeSpan ?deathDate;
-        pdc:tookPlaceAt ?deathPlace.
+	?author pdc:diedIn ?death.
+	    OPTIONAL{
+            ?death pdc:hasTimeSpan ?deathSpan.
+            ?deathSpan pdc:date ?deathDate.
+	    }
+        OPTIONAL{
+            ?death pdc:tookPlaceAt ?deathPlace.
+            ?deathPlace rdfs:label ?deathPlaceLabel.
+        }
     }
     
     OPTIONAL{
-	<$> pdc:portrait ?portrait.
+	?author pdc:portrait ?portrait.
     }
 
     OPTIONAL{
         ?agentRole pdc:authorEducationLevel ?education_level; 
     }    
         OPTIONAL{
-        <$> pdc:portrait ?portrait.
+        ?author pdc:portrait ?portrait.
     }
         OPTIONAL{
-        <$> pdc:additionalName ?additionalName.
+        ?author pdc:additionalName ?additionalName.
     }
         OPTIONAL{
-        <$> pdc:alternativeName ?alternativeName.
+        ?author pdc:alternativeName ?alternativeName.
     }
         OPTIONAL{
-        <$> pdc:biography ?biography.
+        ?author pdc:biography ?biography.
     }
         OPTIONAL{
-        <$> pdc:forename ?forename.
+        ?author pdc:forename ?forename.
     }
         OPTIONAL{
-        <$> pdc:genName ?genName.
+        ?author pdc:genName ?genName.
     }
         OPTIONAL{
-        <$> pdc:ethnicity ?etn.
+        ?author pdc:ethnicity ?etn.
         ?etn rdfs:label ?ethnicity
     }
         OPTIONAL{
-        <$> pdc:gender ?gen.
+        ?author pdc:gender ?gen.
         ?gen rdfs:label ?gender.
     }
         OPTIONAL{
-        <$> pdc:isMemberOf ?organisation.
+        ?author pdc:isMemberOf ?organisation.
         ?organisation rdfs:label ?organisationName.
     }
         OPTIONAL{
-        <$> pdc:movement ?mov. # Literary Period!
+        ?author pdc:movement ?mov. # Literary Period!
         ?mov rdfs:label ?movement.
     }
         OPTIONAL{
-        <$> pdc:religiousAffiliation ?rel.  # Religion or org?
+        ?author pdc:religiousAffiliation ?rel.  # Religion or org?
         ?rel rdfs:label ?religion.
     }
         OPTIONAL{
-        <$> pdc:nationality ?nation.
+        ?author pdc:nationality ?nation.
         ?nation rdfs:label ?nationality.
     }
         OPTIONAL{
-        <$> pdc:occupation ?occ.
+        ?author pdc:hasOccupation ?occ.
         ?occ rdfs:label ?occupation.
     }
 }
@@ -236,22 +295,34 @@ WHERE{
     '''
 CONSTRUCT{
 
-    <$> pdc:isRealisedThrough ?redaction.
+    ?poetic_work pdc:isRealisedThrough ?redaction.
     
     ?redaction pdc:title ?title;
         pdc:genre ?genre;
         pdc:text ?text;
         pdc:contributor ?contributor;
         pdc:date ?date;
-        pdc:alternativeTitle ?alternativeTitle.
+        pdc:alternativeTitle ?alternativeTitle;
+        pdc:scansions ?scansion.
+    
+    ?scansion pdc:contributor ?sc_contributor;
+        pdp:typeOfScansion ?scansion_type;
+        pdc:employedTechnique ?technique.
+    
+    ?sc_contributor pdc:name ?sc_agent_name;
+        pdc:roleFunction ?sc_role.
     
     ?contributor pdc:name ?name;
         pdc:roleFunction ?role.
 }
+
 WHERE
+
 {
-    <$> a pdc:PoeticWork;
+    BIND (<$> AS ?poetic_work)
+    ?poetic_work a pdc:PoeticWork;                                                                     
         pdc:isRealisedThrough ?redaction.
+    
     OPTIONAL{
         ?redaction pdc:title ?title.
     }
@@ -263,23 +334,34 @@ WHERE
     }
     OPTIONAL{
         ?redaction pdc:alternativeTitle ?alternativeTitle.
-    } 
-    OPTIONAL{
-        ?creation a pdc:ExpressionCreation;
-            pdc:createdExpressionFromExpressionCreation ?redaction;
-            pdc:hasAgentRole ?agentRole;
-            pdc:hasTimeSpan ?timeSpan.
-        ?timeSpan pdc:date ?date.
-        ?agentRole pdc:hasAgent ?agent;
-            pdc:roleFunction ?role.
-        ?agent pdc:name ?name.
     }
+
+    OPTIONAL{
+        ?scansion_process a pdp:ScansionProcess;
+            pdp:generated ?scansion;
+            pdp:usedAsInput ?redaction.
+        OPTIONAL{
+            ?scansion_process pdp:employedTechnique ?technique.
+        }
+        OPTIONAL{
+            ?scansion_process pdc:hasAgentRole ?agentRole.
+            ?agentRole pdc:hasAgent ?agent;
+                pdc:roleFunction ?s_role.
+            ?agent pdc:name ?sc_agent_name.
+            ?s_role rdfs:label ?sc_role.
+        }
+        OPTIONAL{
+            ?scansion pdp:typeOfScansion ?sc_type.
+            ?sc_type rdfs:label ?scansion_type.
+        }
+    }
+
 }
     ''',
     'scansion_structure':
     '''
 CONSTRUCT{
-    ?redaction
+    ?scansion
         pdp:hasStanza ?stanza;
         pdp:hasRedactionPattern ?redaction_pattern.
     
@@ -288,12 +370,16 @@ CONSTRUCT{
 
     ?stanza
         pdp:hasStanzaPattern ?stanza_pattern;
-        pdp:hasLine ?line.
+        pdp:content ?stanza_content;
+        pdp:hasLine ?line;
+        pdp:typeOfStanza ?type_of_stanza.
     
     ?line
         pdp:hasLinePattern ?line_pattern;
         pdp:relativeLineNumber ?relative_line_number;
-        pdp:absoluteLineNumber ?absolute_line_number.
+        pdp:absoluteLineNumber ?absolute_line_number;
+        pdp:content ?line_content;
+        pdp:hasRhyme ?rhyme.
     
     ?line_pattern
         pdp:patterningMetricalScheme ?patterning_metrical_scheme.
@@ -302,73 +388,12 @@ CONSTRUCT{
         pdp:rhymeScheme ?stanza_type.
     
     ?rhyme
-        pdp:typeOfRhymeMatching ?rhyme_matching_type;
+        pdp:presentsRhymeMatching ?rhyme_matching;
         pdp:rhymeLabel ?rhyme_label;
         pdp:rhymeGrapheme ?rhyme_grapheme.
-}
-
-WHERE{
-
-    # ?scansion_process a pdp:ScansionProcess;
-        # pdp:generated ?scansion;
-        # pdp:usedAsInput ?redaction;
-        # pdp:hasAgent ?agent.
     
-    #  OPTIONAL{
-    #     ?scansion_process pdp:usedAsInput ?redaction.
-    # }
-    
-    # ?scansion a pdp:Scansion;
-        # pdp:typeOfScansion ?type_of_scansion.
-
-    BIND (<$> AS ?redaction)
-    
-    OPTIONAL{
-        ?redaction pdp:hasRedactionPattern ?redaction_pattern.
-        ?redaction_pattern a pdp:RedactionPattern;
-            pdp:metricalCategory ?metrical_category;
-            pdp:metricalComplexity ?metrical_complexity.
-        # ?scansion pdp:hasPatternAnnotation ?redaction_pattern.
-    }
-
-    ?redaction a pdc:Redaction;
-        pdp:hasStanza ?stanza.
-    
-    ?stanza a pdp:Stanza;
-        pdp:hasStanzaPattern ?stanza_pattern;
-        pdp:stanzaNumber ?stanza_number;
-        pdp:content ?stanza_content;
-        pdp:hasLine ?line.
-    
-    ?line a pdp:Line;
-        pdp:hasLinePattern ?line_pattern;
-        pdp:relativeLineNumber ?relative_line_number;
-        pdp:absoluteLineNumber ?absolute_line_number;
-        pdp:content ?line_content.
-    
-    OPTIONAL{
-        # ?scansion pdp:hasPatternAnnotation ?stanza_pattern.
-        ?stanza_pattern a pdp:StanzaPattern;
-            pdp:rhymeScheme ?stanza_type.
-    }
-    OPTIONAL{
-        # ?scansion pdp:hasPatternAnnotation ?line_pattern.
-        ?line_pattern a pdp:LinePattern;
-            pdp:patterningMetricalScheme ?patterning_metrical_scheme.
-    }
-    OPTIONAL{
-        ?line pdp:hasRhyme ?rhyme.
-        ?rhyme pdp:typeOfRhymeMatching ?type_of_rm;
-            pdp:rhymeLabel ?rhyme_label;
-            pdp:rhymeGrapheme ?rhyme_grapheme.
-        ?type_of_rm rdfs:label ?rhyme_matching_type.
-    }
-}
-    ''',
-    'scansion_line':
-    '''
-CONSTRUCT{
-    <$> pdp:hasWord ?word;
+    # Q2
+    ?line pdp:hasWord ?word;
         pdp:hasGrammaticalSyllable ?gram_syll;
         pdp:hasMetricalSyllable ?met_syll;
         pdp:hasPunctuation ?punctuation.
@@ -389,47 +414,81 @@ CONSTRUCT{
 }
 
 WHERE{
-    <$> a pdp:Line.
+    BIND (<$> AS ?scansion)
+    # http://postdata.linhd.uned.es/resource/sc_juana-ines-de-la-cruz_copia-divina-en-quien-veo_plc_16373500155357022
+    # http://postdata.linhd.uned.es/resource/sc_juana-ines-de-la-cruz_copia-divina-en-quien-veo_plc_16373500147326002
+
+    ?scansion a pdp:Scansion;
+        pdp:hasStanza ?stanza.
+    
+    ?stanza a pdp:Stanza;
+        pdp:stanzaNumber ?stanza_number;
+        pdp:content ?stanza_content;
+        pdp:hasLine ?line.
     
     OPTIONAL{
-        <$> pdp:hasMetricalSyllable ?met_syll.
+        ?stanza pdp:typeOfStanza ?type_of_stanza.
+    }
+    
+    ?line a pdp:Line;
+        pdp:relativeLineNumber ?relative_line_number;
+        pdp:absoluteLineNumber ?absolute_line_number;
+        pdp:content ?line_content;
+        pdp:hasWord ?word.
+    
+    ?word pdp:wordNumber ?word_number;
+        pdp:content ?word_content.
+    
+    OPTIONAL{
+        ?word pdp:isWordAnalysedBy ?word_unit.
+    }
+
+    OPTIONAL{
+        ?line pdp:hasGrammaticalSyllable ?gram_syll.
+        ?gram_syll pdp:grammaticalSyllableNumber ?gram_syll_number.
+        OPTIONAL{
+            ?gram_syll pdp:isStressed ?is_stressed_g.
+        }
+        OPTIONAL{
+            ?gram_syll pdp:isGrammaticalSyllableAnalysedBy ?met_syll_unit.
+        }
+    }
+
+    OPTIONAL{
+        ?line pdp:hasMetricalSyllable ?met_syll.
         ?met_syll pdp:isStressed ?is_stressed_m;
-            pdp:metricalSyllableNumber ?met_syll_number;
-            pdp:content ?met_syll_text.
+            pdp:metricalSyllableNumber ?met_syll_number.
+    }
+
+    OPTIONAL{
+        ?line pdp:hasPunctuation ?punctuation.
+        ?punctuation pdp:content ?punctuation_content.
         OPTIONAL{
-            ?met_syll pdp:isMetricalSyllableAnalysedBy ?met_syll_unit.
+            ?punctuation pdp:before ?before_word.
+        }
+        OPTIONAL{
+            ?punctuation pdp:after ?after_word.
         }
     }
+
     OPTIONAL{
-        <$> pdp:hasGrammaticalSyllable ?gram_syll.
-        ?gram_syll pdp:grammaticalSyllableNumber ?gram_syll_number;
-            # pdp:analysesWord ?word;
-            pdp:isStressed ?is_stressed_g;
-            pdp:content ?gram_syll_text.
-        OPTIONAL{
-            ?gram_syll pdp:isGrammaticalSyllableAnalysedBy ?gram_syll_unit.
-        }
+        ?line pdp:hasRhyme ?rhyme.
+        ?rhyme pdp:presentsRhymeMatching ?rhyme_matching;
+            pdp:rhymeLabel ?rhyme_label;
+            pdp:rhymeGrapheme ?rhyme_grapheme.
     }
+   
     OPTIONAL{
-        <$> pdp:hasWord ?word.
-        ?word pdp:wordNumber ?word_number;
-            pdp:isWordAnalysedBy ?word_unit;
-            pdp:content ?word_content.
-        OPTIONAL{
-            ?word pdp:isWordAnalysedBy ?word_unit.
-        }
+        ?line pdp:hasLinePattern ?line_pattern.
+        ?line_pattern pdp:patterningMetricalScheme ?patterning_metrical_scheme.
     }
+
     OPTIONAL{
-        <$> pdp:hasPunctuation ?punctuation.
-        ?punctuation pdp:after ?after_word.
-    }
-    OPTIONAL{
-        <$> pdp:hasPunctuation ?punctuation.
-        ?punctuation pdp:before ?before_word.
+        ?stanza pdp:hasStanzaPattern ?stanza_pattern.
+        ?stanza_pattern pdp:rhymeScheme ?stanza_type.
     }
 }
-    '''
-}
+    '''}
 
 CONTEXT = {
     # "@language": "es",
@@ -448,11 +507,14 @@ CONTEXT = {
     "date": {
         "@id": "http://postdata.linhd.uned.es/ontology/postdata-core#date",
         "@type": "http://www.w3.org/2001/XMLSchema#date"},
+    "birthPlace": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-core#birthPlace"},
+    "deathPlace": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-core#deathPlace"},
     "gender": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-core#gender" },
     "movement": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-core#movement" },
     "religiousAffiliation": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-core#religiousAffiliation" },
     "occupation": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-core#occupation" },
-    "portrait": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-core#portrait" },
+    "portrait": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-core#portrait" ,
+                 "@type": "@id"},
     "works": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-core#works" },
     "ethnicity": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-core#ethnicity" },
     "stanzas": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#hasStanza",
@@ -487,5 +549,9 @@ CONTEXT = {
     "isMetricalSyllableAnalysedBy": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#isMetricalSyllableAnalysedBy",
                                      "@type": "@id"},
     "content": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#content"},
-    "wordNumber": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#wordNumber"}
+    "wordNumber": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#wordNumber"},
+    "scansions": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-core#scansions"},
+    "typeOfScansion": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#typeOfScansion"},
+    "employedTechnique": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-core#employedTechnique",
+                          "@type": "@id"}
 }

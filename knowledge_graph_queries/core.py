@@ -14,8 +14,11 @@ def get_poeticWorks():
     """
     conn = get_db()
     query = QUERIES['poeticWorks']
-    results = conn.select(query, content_type=stardog.content_types.SPARQL_JSON)
-    return results
+    results = conn.graph(query, content_type=stardog.content_types.LD_JSON)
+    jsonld_results = json.loads(results, encoding="utf-8")
+    compacted = jsonld.compact(jsonld_results, CONTEXT)
+    graph = compacted.get("@graph")
+    return graph
 
 
 def get_poeticWork(title, limit=10):
@@ -34,7 +37,8 @@ def get_poeticWork(title, limit=10):
     jsonld_results = json.loads(results, encoding="utf-8")
     compacted = jsonld.compact(jsonld_results, CONTEXT)
     # return process_jsonld(results)
-    return compacted
+    graph = compacted.get("@graph")
+    return graph
 
 
 def get_authors():
@@ -44,8 +48,11 @@ def get_authors():
     """
     conn = get_db()
     query = QUERIES['authors']
-    results = conn.select(query, content_type=stardog.content_types.SPARQL_JSON)
-    return results
+    results = conn.graph(query, content_type=stardog.content_types.LD_JSON)
+    jsonld_results = json.loads(results, encoding="utf-8")
+    compacted = jsonld.compact(jsonld_results, CONTEXT)
+    graph = compacted.get("@graph")
+    return graph
 
 
 def get_author(name, limit=10):
@@ -64,7 +71,8 @@ def get_author(name, limit=10):
     jsonld_results = json.loads(results)
     compacted = jsonld.compact(jsonld_results, CONTEXT)
     # return process_jsonld(results)
-    return compacted
+    graph = compacted.get("@graph")
+    return graph
 
 
 def get_author_profile(uri):
@@ -87,6 +95,7 @@ def get_author_profile(uri):
     )
     compacted = jsonld.compact(framed, CONTEXT)
     # print(json.dumps(compacted, indent=2))
+    del compacted["@context"]
     return compacted
 
 
@@ -111,17 +120,20 @@ def get_redactions(uri):
         }
     })
     compacted = jsonld.compact(framed, CONTEXT)
+    del compacted["@context"]
     return compacted
 
 
-def get_scansion_structure(uri):
-    """Method to return the basic structure of a particular redaction or
-    edition
+def get_scansion(uri):
+    """Method to return the basic structure of a particular scansion
 
-    :param uri: the URI of the redaction resource
+    :param uri: the URI of the scansion resource
     :type uri: str
-    :return JSON with scansion information including stanzas and lines.
-    Pattern information is also provided at redaction, stanza and line levels.
+    :return JSON with scansion information including lists of structural units
+    (stanzas, lines, words, punctuations) and analytical units (grammatical and
+    metrical syllables, feet and morae), metrical information (redaction,
+    stanza and line patterns), and literary device annotations (enjambment,
+    shceme, tropes, intertextuality, etc.)
     """
     query = QUERIES['scansion_structure'].replace('$', uri)
     conn = get_db()
@@ -136,7 +148,8 @@ def get_scansion_structure(uri):
         }
     )
     compacted = jsonld.compact(framed, CONTEXT)
-    return compacted
+    graph = compacted.get("@graph")
+    return graph
 
 
 def get_scansion_line(uri):
@@ -206,7 +219,8 @@ def connect_to_database():
         'username': 'admin',
         'password': 'admin',
     }
-    database_name = "PD_KG_SPA"
+    # database_name = "PD_KG_SPA"
+    database_name = "PD_KG"
     with stardog.Admin(**connection_details) as admin:
         if database_name in [db.name for db in admin.databases()]:
             return stardog.Connection(database_name, **connection_details)

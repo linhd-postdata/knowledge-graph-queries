@@ -11,11 +11,11 @@ servers:
   - url: http://localhost:5000/
     description: Test server
 paths:
-  /poeticWorks:
+  /book/{title}:
     get:
-      summary: List of all the poeticWorks
-      description: Gets list of all the poeticWorks
-      operationId: knowledge_graph_queries.get_poeticWorks
+      summary: Given a book obtain the poetic works
+      description: Obtain all the data about the book
+      operationId: knowledge_graph_queries.get_book
       responses:
         200:
           description: OK
@@ -23,21 +23,14 @@ paths:
             application/json:
               schema:
                 type: object
-                example: { "head": { "vars": [ "work", "title", "creator", "date" ] }, "results": { "bindings": [ { "creator": { "type": "literal", "value": "Juana Inés de la Cruz", "xml:lang": "es" }, "title": { "type": "literal", "value": "A estos peñascos rudos", "xml:lang": "es" }, "work": { "type": "uri", "value": "http://postdata.linhd.uned.es/resource/pw_juana-ines-de-la-cruz_a-estos-penascos-rudos" } }, { "creator": { "type": "literal", "value": "Antonio Enríquez Gómez", "xml:lang": "es" }, "title": { "type": "literal", "value": "Al son de este arroyuelo, cüyo ronco", "xml:lang": "es" }, "work": { "type": "uri", "value": "http://postdata.linhd.uned.es/resource/pw_antonio-enriquez-gomez_al-son-de-este-arroyuelo-cuyo-ronco" } }, { "creator": { "type": "literal", "value": "Juana Inés de la Cruz", "xml:lang": "es" }, "title": { "type": "literal", "value": "Amado dueño mío", "xml:lang": "es" }, "work": { "type": "uri", "value": "http://postdata.linhd.uned.es/resource/pw_juana-ines-de-la-cruz_amado-dueno-mio" } }, { "creator": { "type": "literal", "value": "Juana Inés de la Cruz", "xml:lang": "es" }, "title": { "type": "literal", "value": "Amante dulce del alma", "xml:lang": "es" }, "work": { "type": "uri", "value": "http://postdata.linhd.uned.es/resource/pw_juana-ines-de-la-cruz_amante-dulce-del-alma" } } ] } }
-
-  /authors:
-    get:
-      summary: List of all the authors
-      description: Gets list of all the authors
-      operationId: knowledge_graph_queries.get_authors
-      responses:
-        200:
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                example: { "head": { "vars": [ "person", "name", "deathDate", "birthDate" ] }, "results": { "bindings": [ { "name": { "type": "literal", "value": "Juana Inés de la Cruz", "xml:lang": "es" }, "person": { "type": "uri", "value": "http://postdata.linhd.uned.es/resource/p_juana-ines-de-la-cruz" } }, { "name": { "type": "literal", "value": "Antonio Enríquez Gómez", "xml:lang": "es" }, "person": { "type": "uri", "value": "http://postdata.linhd.uned.es/resource/p_antonio-enriquez-gomez" } } ] } }
+      parameters:
+        - name: title
+          in: path
+          description: Title of the book
+          required: true
+          schema:
+            type: string
+          style: simple
 
   /manifestations:
     get:
@@ -53,6 +46,62 @@ paths:
                 type: object
                 example: { }
 
+  /poeticWorks:
+    get:
+      summary: List of all the poeticWorks
+      description: Gets list of all the poeticWorks
+      operationId: knowledge_graph_queries.get_poeticWorks
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /authors:
+    get:
+      summary: List of all the authors
+      description: Gets list of all the authors
+      operationId: knowledge_graph_queries.get_authors
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  [
+                    {
+                      "@id": "http://postdata.linhd.uned.es/resource/p_juana-ines-de-la-cruz",
+                      "birthDate": "1651-11-12T00:00:00Z",
+                      "deathDate": "1695-04-17T00:00:00Z",
+                      "name": "Juana Inés de la Cruz"
+                    },
+                    {
+                      "@id": "http://postdata.linhd.uned.es/resource/p_antonio-enriquez-gomez",
+                      "birthDate": "1600-01-01T00:00:00Z",
+                      "deathDate": "1663-01-01T00:00:00Z",
+                      "name": "Antonio Enríquez Gómez"
+                    },
+                    {
+                      "@id": "http://postdata.linhd.uned.es/resource/p_san-juan-de-la-cruz",
+                      "birthDate": "1542-07-04T00:00:00Z",
+                      "deathDate": "1591-12-14T00:00:00Z",
+                      "name": "San Juan de la Cruz"
+                    },
+                    {
+                      "@id": "http://postdata.linhd.uned.es/resource/p_gaspar-gil-polo",
+                      "birthDate": [
+                          "1530-01-01T00:00:00Z",
+                          "1540-01-01T00:00:00Z"
+                      ],
+                      "deathDate": "1591-01-01T00:00:00Z",
+                      "name": "Gaspar Gil Polo"
+                    }
+                  ]
+
   /author/{name}:
     get:
       description: Search authors by name
@@ -65,7 +114,38 @@ paths:
             application/json:
               schema:
                 type: object
-                example: { "@context": { "fts": "tag:stardog:api:search:", "pdc": "http://postdata.linhd.uned.es/ontology/postdata-core#" }, "@graph": [ { "@id": "http://postdata.linhd.uned.es/resource/p_antonio-enriquez-gomez", "pdc:name": { "@language": "es", "@value": "Antonio Enríquez Gómez" }, "pdc:score": { "@value": 1 } } ] }
+                example:
+                  [
+                    {
+                      "@id": "http://postdata.linhd.uned.es/resource/p_juan-de-la-cueva",
+                      "name": "Juan de La Cueva",
+                      "score": 8.051570892333984
+                    },
+                    {
+                      "@id": "http://postdata.linhd.uned.es/resource/p_san-juan-de-la-cruz",
+                      "birthDate": "1542-07-04T00:00:00Z",
+                      "deathDate": "1591-12-14T00:00:00Z",
+                      "name": "San Juan de la Cruz",
+                      "score": 8.051570892333984
+                    },
+                    {
+                      "@id": "http://postdata.linhd.uned.es/resource/p_juan-boscan",
+                      "birthDate": "1490-01-01T00:00:00Z",
+                      "deathDate": "1542-09-21T00:00:00Z",
+                      "name": "Juan Boscán",
+                      "score": 7.051570415496826
+                    },
+                    {
+                      "@id": "http://postdata.linhd.uned.es/resource/p_hernando-de-acunya",
+                      "name": "Hernando de Acunya",
+                      "score": 1
+                    },
+                    {
+                      "@id": "http://postdata.linhd.uned.es/resource/p_francisco-de-la-torre",
+                      "name": "Francisco de la Torre",
+                      "score": 1
+                    }
+                  ]
     parameters:
       - name: name
         in: path
@@ -93,6 +173,52 @@ paths:
             application/json:
               schema:
                 type: object
+                example:
+                  {
+                    "@id": "http://postdata.linhd.uned.es/resource/p_fernando-de-herrera",
+                    "birthDate": "1534-01-01T00:00:00Z",
+                    "birthPlace": {
+                      "@language": "es",
+                      "@value": "Sevilla"
+                    },
+                    "deathDate": "1597-01-01T00:00:00Z",
+                    "deathPlace": {
+                      "@language": "es",
+                      "@value": "Sevilla"
+                    },
+                    "gender": {
+                      "@language": "es",
+                      "@value": "masculino"
+                    },
+                    "name": "Fernando de Herrera",
+                    "occupation": [
+                      {
+                        "@language": "es",
+                        "@value": "escritor"
+                      },
+                      {
+                        "@language": "es",
+                        "@value": "poeta"
+                      },
+                      {
+                        "@language": "es",
+                        "@value": "sacerdote"
+                      }
+                    ],
+                    "portrait": "http://commons.wikimedia.org/wiki/Special:FilePath/Francisco%20pacheco-fernando%20de%20herrera.jpg",
+                    "works": [
+                      {
+                        "@id": "http://postdata.linhd.uned.es/resource/pw_fernando-de-herrera_si-el-presente-dolor-de-vuestra-pena",
+                        "roleFunction": "http://postdata.linhd.uned.es/kos/Creator",
+                        "title": "Si el presente dolor de vuestra pena"
+                      },
+                      {
+                        "@id": "http://postdata.linhd.uned.es/resource/pw_fernando-de-herrera_inclinen-a-tu-nombre-o-luz-d-espana",
+                        "roleFunction": "http://postdata.linhd.uned.es/kos/Creator",
+                        "title": "Inclinen a tu nombre, ô luz d' España,"
+                      }
+                    ]
+                  }
     parameters:
       - name: "uri"
         in: path
@@ -102,28 +228,6 @@ paths:
           type: string
           format: path
         style: simple
-
-  /book/{title}:
-    get:
-      summary: Given a book obtain the poetic works
-      description: Obtain all the data about the book
-      operationId: knowledge_graph_queries.get_book
-      responses:
-        200:
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                example: { }
-      parameters:
-        - name: title
-          in: path
-          description: Title of the book
-          required: true
-          schema:
-            type: string
-          style: simple
 
   /poeticWork/{title}:
     get:
@@ -137,7 +241,39 @@ paths:
             application/json:
               schema:
                 type: object
-                example: { "@context": { "fts": "tag:stardog:api:search:", "kos": "http://postdata.linhd.uned.es/kos/", "pdc": "http://postdata.linhd.uned.es/ontology/postdata-core#" }, "@graph": [ { "@id": "http://postdata.linhd.uned.es/resource/pw_juana-ines-de-la-cruz_a-estos-penascos-rudos", "pdc:author": { "@language": "es", "@value": "Juana Inés de la Cruz" }, "pdc:name": { "@language": "es", "@value": "A estos peñascos rudos" }, "pdc:score": { "@value": 1 } } ] }
+                example:
+                  [
+                    {
+                      "@id": "http://postdata.linhd.uned.es/resource/pw_luis-de-camoes_alma-y-primero-amor-del-alma-mia",
+                      "author": "Luis de Camoes",
+                      "name": "Alma y primero amor del alma mía,",
+                      "score": 5.3689069747924805
+                    },
+                    {
+                      "@id": "http://postdata.linhd.uned.es/resource/pw_alonso-de-ercilla_que-cosa-puede-haber-sin-amor-buena",
+                      "author": "Alonso de Ercilla",
+                      "name": "¿Qué cosa puede haber sin amor buena?",
+                      "score": 4.3689069747924805
+                    },
+                    {
+                      "@id": "http://postdata.linhd.uned.es/resource/pw_francisco-de-quevedo_este-amor-que-yo-alimento",
+                      "author": "Francisco de Quevedo",
+                      "name": "Este amor que yo alimento",
+                      "score": 4.3689069747924805
+                    },
+                    {
+                      "@id": "http://postdata.linhd.uned.es/resource/pw_fray-luis-de-leon_senor-aquel-amor-por-quien-forzado",
+                      "author": "Fray Luis de León",
+                      "name": "Señor, aquel amor por quien forzado",
+                      "score": 4.3689069747924805
+                    },
+                    {
+                      "@id": "http://postdata.linhd.uned.es/resource/pw_fray-luis-de-leon_al-campo-va-mi-amor-y-va-a-la-aldea",
+                      "author": "Fray Luis de León",
+                      "name": "Al campo va mi amor, y va a la aldea.",
+                      "score": 4.3689069747924805
+                    }
+                  ]
       parameters:
         - name: title
           in: path
@@ -153,10 +289,11 @@ paths:
           schema:
             type: integer
 
+
   /redactions/{uri}:
     get:
       description: Get all the information related to the editions of a poetic work
-      summary: Provides textual information and poetic analysis annotations for the textual editions of a poetic work
+      summary: Provides contributor information and the available scansions for each textual edition of a poetic work
       operationId: knowledge_graph_queries.get_redactions
       responses:
         200:
@@ -165,6 +302,25 @@ paths:
             application/json:
               schema:
                 type: object
+                example:
+                  {
+                    "@id": "http://postdata.linhd.uned.es/resource/pw_francisco-de-quevedo_este-amor-que-yo-alimento",
+                    "isRealisedThrough": {
+                      "@id": "http://postdata.linhd.uned.es/resource/r_francisco-de-quevedo_este-amor-que-yo-alimento_plc",
+                      "scansions": [
+                        {
+                          "@id": "http://postdata.linhd.uned.es/resource/sc_francisco-de-quevedo_este-amor-que-yo-alimento_plc_16376740779860482",
+                          "typeOfScansion": "Manual Annotation"
+                        },
+                        {
+                          "@id": "http://postdata.linhd.uned.es/resource/sc_francisco-de-quevedo_este-amor-que-yo-alimento_plc_16376740784785693",
+                          "employedTechnique": "http://postdata.linhd.uned.es/kos/CompleteSpanishSyllabification",
+                          "typeOfScansion": "Automatic Annotation"
+                        }
+                      ],
+                      "text": "Este amor, que yo alimento\nde mi propio corazón,\nno nace de inclinación,\nsino de conocimiento.\nQue amor de cosa tan bella,\ny gracia, que es infinita,\nsi es elección, me acredita,\nsi no acredita mi estrella.\n¿Y qué deidad me pudiera\ninclinar a que te amara,\nque ese poder no tomara\npara sí, si le tuviera?\nCorrido, señora, escribo\nen el estado presente,\nde que estando de ti ausente,\naún parezca que estoy vivo.\nPues ya en mi pena y pasión,\ndulce Tirsi, tengo hechas\nde las plumas de tus flechas\nlas alas del corazón.\nY sin poder consolarme,\nausente, y amando firme,\nmás hago yo en no morirme,\nque hará el dolor en matarme.\nTanto he llegado a quererte,\nque siento igual pena en mí,\ndel ver, no viéndote a ti,\nque adorándote no verte.\nSi bien recelo, señora,\nque a este amor serás infiel,\npues ser hermosa y cruel\nte pronostica traidora.\nPero traiciones dichosas\nserán, Tirsi, para mí,\npor ver dos caras en ti,\nque han de ser por fuerza hermosas.\nY advierte que en mi pasión,\nse puede tener por cierto,\nque es decir ausente y muerto,\ndos veces una razón."
+                    }
+                  }
     parameters:
       - name: "uri"
         in: path
@@ -175,11 +331,11 @@ paths:
           format: path
         style: simple
 
-  /scansion_structure/{uri}:
+  /scansion/{uri}:
     get:
-      description: Gets the basic structure of the scansions available for a given redaction
-      summary: For each scansion, provides structural information for stanzas and lines as well as pattern iormation for the redaction, stanzas and lines
-      operationId: knowledge_graph_queries.get_scansion_structure
+      description: Gets all the data associated to a given scansion
+      summary: For each scansion, provides structural information for stanzas and lines as well as pattern iormation for the redaction, stanzas and lines. It also includes literary device annotations such enjambment or synalepha.
+      operationId: knowledge_graph_queries.get_scansion
       responses:
         200:
           description: OK
@@ -190,29 +346,7 @@ paths:
     parameters:
       - name: "uri"
         in: path
-        description: The URI of a redaction resource
-        required: true
-        schema:
-          type: string
-          format: path
-        style: simple
-
-  /scansion_line/{uri}:
-    get:
-      description: Gets detailed structure of a scanned line, including words and more granular units such grammatical syllables, metrical syllables, morae and feet.
-      summary: Given a line, returns scansion information related to its constituents
-      operationId: knowledge_graph_queries.get_scansion_line
-      responses:
-        200:
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-    parameters:
-      - name: "uri"
-        in: path
-        description: The URI of a line resource
+        description: The URI of a scansion resource
         required: true
         schema:
           type: string
