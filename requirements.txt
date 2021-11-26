@@ -2,3 +2,4 @@ connexion[swagger-ui]~=2.9.0
 pystardog==0.9.10
 setuptools~=57.0.0
 Flask~=1.1.4
+pyld==2.0.3
