@@ -217,7 +217,7 @@ def connect_to_database():
     connection_details = {
         'endpoint': 'http://localhost:5820',
         'username': 'admin',
-        'password': 'admin',
+        'password': 'LuckyLuke99'
     }
     # database_name = "PD_KG_SPA"
     database_name = "PD_KG"
