@@ -6,9 +6,9 @@ info:
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   version: "0.0.1"
 servers:
-  - url: /
+  - url: http://62.204.199.252:5005
     description: Production server
-  - url: http://localhost:5000/
+  - url: http://localhost:5005/
     description: Test server
 paths:
   /book/{title}:

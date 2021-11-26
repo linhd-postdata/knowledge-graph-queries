@@ -215,7 +215,7 @@ def connect_to_database():
     :return: stardog.Connection with knowledge graph
     """
     connection_details = {
-        'endpoint': 'http://localhost:5820',
+        'endpoint': 'http://62.204.199.252:5820',
         'username': 'admin',
         'password': 'LuckyLuke99'
     }
