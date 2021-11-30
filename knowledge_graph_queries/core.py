@@ -214,7 +214,6 @@ def connect_to_database(host="http://triplestore", port=5820):
 
     :return: stardog.Connection with knowledge graph
     """
-    print(host)
     connection_details = {
         'endpoint': f"{host}:{port}",
         'username': 'admin',
