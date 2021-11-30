@@ -15,7 +15,7 @@ def get_poeticWorks():
     conn = get_db()
     query = QUERIES['poeticWorks']
     results = conn.graph(query, content_type=stardog.content_types.LD_JSON)
-    jsonld_results = json.loads(results, encoding="utf-8")
+    jsonld_results = json.loads(results)
     compacted = jsonld.compact(jsonld_results, CONTEXT)
     graph = compacted.get("@graph")
     return graph
@@ -34,7 +34,7 @@ def get_poeticWork(title, limit=10):
     conn = get_db()
     query = QUERIES['poeticWork'].replace('$*', title + '*').replace('$limit', str(limit))
     results = conn.graph(query, content_type=stardog.content_types.LD_JSON)
-    jsonld_results = json.loads(results, encoding="utf-8")
+    jsonld_results = json.loads(results)
     compacted = jsonld.compact(jsonld_results, CONTEXT)
     # return process_jsonld(results)
     graph = compacted.get("@graph")
@@ -49,7 +49,7 @@ def get_authors():
     conn = get_db()
     query = QUERIES['authors']
     results = conn.graph(query, content_type=stardog.content_types.LD_JSON)
-    jsonld_results = json.loads(results, encoding="utf-8")
+    jsonld_results = json.loads(results)
     compacted = jsonld.compact(jsonld_results, CONTEXT)
     graph = compacted.get("@graph")
     return graph
@@ -215,7 +215,7 @@ def connect_to_database():
     :return: stardog.Connection with knowledge graph
     """
     connection_details = {
-        'endpoint': 'http://localhost:5820',
+        'endpoint': 'http://62.204.199.252:5820',
         'username': 'admin',
         'password': 'LuckyLuke99'
     }
