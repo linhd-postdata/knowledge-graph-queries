@@ -209,13 +209,14 @@ def get_book(title, limit):
     return {'TODO': '?'}
 
 
-def connect_to_database():
+def connect_to_database(host="http://triplestore", port=5820):
     """ Establish connection with knowledge graph
 
     :return: stardog.Connection with knowledge graph
     """
+    print(host)
     connection_details = {
-        'endpoint': 'http://62.204.199.252:5820',
+        'endpoint': f"{host}:{port}",
         'username': 'admin',
         'password': 'LuckyLuke99'
     }
