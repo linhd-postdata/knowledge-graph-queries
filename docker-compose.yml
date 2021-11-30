@@ -2,6 +2,7 @@ version: "3"
 
 services:
   triplestore:
+    build: ./postdata-stardog
     image: linhdpostdata/postdata-stardog:latest
     volumes:
       - ./postdata-stardog/stardog:/stardog
@@ -12,6 +13,7 @@ services:
       STARDOG_ADMIN_PASSWORD: "LuckyLuke99"
 
   swagger:
+    build: ./knowledge-graph-queries
     image: linhdpostdata/knowledge-graph-queries:latest
     volumes:
       - ./knowledge-graph-queries/knowledge_graph_queries:/usr/src/app/knowledge_graph_queries
