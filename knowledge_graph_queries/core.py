@@ -15,7 +15,7 @@ def get_poeticWorks():
     conn = get_db()
     query = QUERIES['poeticWorks']
     results = conn.graph(query, content_type=stardog.content_types.LD_JSON)
-    jsonld_results = json.loads(results, encoding="utf-8")
+    jsonld_results = json.loads(results)
     compacted = jsonld.compact(jsonld_results, CONTEXT)
     graph = compacted.get("@graph")
     return graph
@@ -34,7 +34,7 @@ def get_poeticWork(title, limit=10):
     conn = get_db()
     query = QUERIES['poeticWork'].replace('$*', title + '*').replace('$limit', str(limit))
     results = conn.graph(query, content_type=stardog.content_types.LD_JSON)
-    jsonld_results = json.loads(results, encoding="utf-8")
+    jsonld_results = json.loads(results)
     compacted = jsonld.compact(jsonld_results, CONTEXT)
     # return process_jsonld(results)
     graph = compacted.get("@graph")
@@ -49,7 +49,7 @@ def get_authors():
     conn = get_db()
     query = QUERIES['authors']
     results = conn.graph(query, content_type=stardog.content_types.LD_JSON)
-    jsonld_results = json.loads(results, encoding="utf-8")
+    jsonld_results = json.loads(results)
     compacted = jsonld.compact(jsonld_results, CONTEXT)
     graph = compacted.get("@graph")
     return graph
@@ -139,7 +139,6 @@ def get_scansion(uri):
     conn = get_db()
     results = conn.graph(query, content_type=stardog.content_types.LD_JSON)
     json_ld_result = json.loads(results)
-    print(json.dumps(json_ld_result, indent=2))
     framed = jsonld.frame(json_ld_result,
         {
             "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#hasStanza": {
@@ -212,6 +211,10 @@ def get_book(title, limit):
 def connect_to_database(host="http://triplestore", port=5820):
     """ Establish connection with knowledge graph
 
+    :param host: name of the service in docker-compose.yml
+    :type host: str
+    :param port: port for Stardog instance
+    :type port: int
     :return: stardog.Connection with knowledge graph
     """
     connection_details = {
