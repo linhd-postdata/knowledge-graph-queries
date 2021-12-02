@@ -139,17 +139,17 @@ def get_scansion(uri):
     conn = get_db()
     results = conn.graph(query, content_type=stardog.content_types.LD_JSON)
     json_ld_result = json.loads(results)
-    print(json.dumps(json_ld_result, indent=2))
+    # print(json.dumps(json_ld_result, indent=2))
     framed = jsonld.frame(json_ld_result,
-        {
-            "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#hasStanza": {
-                "@embed": "@always",
-            }
-        }
+        {}
     )
+    # print("Framed", framed)
     compacted = jsonld.compact(framed, CONTEXT)
-    graph = compacted.get("@graph")
-    return graph
+    del compacted["@context"]
+    # print(compacted)
+    with open("jsonld.json", 'w+') as fp:
+        fp.write(json.dumps(compacted))
+    return compacted
 
 
 def get_scansion_line(uri):
@@ -215,9 +215,9 @@ def connect_to_database():
     :return: stardog.Connection with knowledge graph
     """
     connection_details = {
-        'endpoint': 'http://62.204.199.252:5820',
+        'endpoint': 'http://localhost:5820',
         'username': 'admin',
-        'password': 'LuckyLuke99'
+        'password': 'admin'
     }
     # database_name = "PD_KG_SPA"
     database_name = "PD_KG"
