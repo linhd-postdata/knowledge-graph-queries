@@ -213,23 +213,23 @@ WHERE{
     }
             
     OPTIONAL{
-	?author pdc:wasBorn ?birth.
-	    OPTIONAL{
-	        ?birth pdc:hasTimeSpan ?birthSpan.
-	        ?birthSpan pdc:date ?birthDate.
-	    }
-    	OPTIONAL{
-    	    ?birth pdc:tookPlaceAt ?birthPlace.
+    ?author pdc:wasBorn ?birth.
+        OPTIONAL{
+            ?birth pdc:hasTimeSpan ?birthSpan.
+            ?birthSpan pdc:date ?birthDate.
+        }
+        OPTIONAL{
+            ?birth pdc:tookPlaceAt ?birthPlace.
             ?birthPlace rdfs:label ?birthPlaceLabel.
-    	}
+        }
     }
 
     OPTIONAL{
-	?author pdc:diedIn ?death.
-	    OPTIONAL{
+    ?author pdc:diedIn ?death.
+        OPTIONAL{
             ?death pdc:hasTimeSpan ?deathSpan.
             ?deathSpan pdc:date ?deathDate.
-	    }
+        }
         OPTIONAL{
             ?death pdc:tookPlaceAt ?deathPlace.
             ?deathPlace rdfs:label ?deathPlaceLabel.
@@ -237,7 +237,7 @@ WHERE{
     }
     
     OPTIONAL{
-	?author pdc:portrait ?portrait.
+    ?author pdc:portrait ?portrait.
     }
 
     OPTIONAL{
@@ -362,24 +362,25 @@ WHERE
     '''
 CONSTRUCT{
     ?scansion
-        pdp:hasStanza ?stanza;
-        pdp:hasRedactionPattern ?redaction_pattern.
+        pdp:stanzaList ?stanza;
+        pdp:workPattern ?redaction_pattern.
     
     ?redaction_pattern
         pdp:metricalCategory ?metrical_category.
 
     ?stanza
-        pdp:hasStanzaPattern ?stanza_pattern;
+        pdp:stanzaPattern ?stanza_pattern;
         pdp:content ?stanza_content;
-        pdp:hasLine ?line;
-        pdp:typeOfStanza ?type_of_stanza.
+        pdp:lineList ?line;
+        pdp:typeOfStanza ?type_of_stanza;
+        pdp:stanzaNumber ?stanza_number.
     
     ?line
         pdp:hasLinePattern ?line_pattern;
         pdp:relativeLineNumber ?relative_line_number;
         pdp:absoluteLineNumber ?absolute_line_number;
         pdp:content ?line_content;
-        pdp:hasRhyme ?rhyme.
+        pdp:rhyme ?rhyme.
     
     ?line_pattern
         pdp:patterningMetricalScheme ?patterning_metrical_scheme.
@@ -388,9 +389,10 @@ CONSTRUCT{
         pdp:rhymeScheme ?stanza_type.
     
     ?rhyme
-        pdp:presentsRhymeMatching ?rhyme_matching;
-        pdp:rhymeLabel ?rhyme_label;
-        pdp:rhymeGrapheme ?rhyme_grapheme.
+        pdp:typeOfRhymeMatching ?rhyme_matching;
+        pdp:rhymeLabel ?rhyme_label.
+        
+    # pdp:rhymeGrapheme ?rhyme_grapheme.
     
     # Q2
     ?line pdp:hasWord ?word;
@@ -411,12 +413,20 @@ CONSTRUCT{
         pdp:isStressed ?is_stressed_m;
         pdp:content ?met_syll_text;
         pdp:isMetricalSyllableAnalysedBy ?met_syll_unit.
+    
+    # Add Metaplasm
+    ?scansion pdp:enjambent ?enjambent;
+        pdp:metaplasm ?metaplasm.
+    
+    ?enjambent pdp:affectLine ?line;
+        pdp:typeOfEnjambment ?type_of_enjambment.
+    
+    ?metaplasm pdp:typeOfMetaplasm ?type_of_metaplasm;
+        pdp:affectsFirstWord ?word.
 }
 
 WHERE{
     BIND (<$> AS ?scansion)
-    # http://postdata.linhd.uned.es/resource/sc_juana-ines-de-la-cruz_copia-divina-en-quien-veo_plc_16373500155357022
-    # http://postdata.linhd.uned.es/resource/sc_juana-ines-de-la-cruz_copia-divina-en-quien-veo_plc_16373500147326002
 
     ?scansion a pdp:Scansion;
         pdp:hasStanza ?stanza.
@@ -444,6 +454,12 @@ WHERE{
     }
 
     OPTIONAL{
+        ?word pdp:isFirstWordAffectedBy ?metaplasm.
+        ?metaplasm pdp:typeOfMetaplasm ?mtp_type.
+        ?mtp_type rdfs:label ?type_of_metaplasm.
+    }
+
+    OPTIONAL{
         ?line pdp:hasGrammaticalSyllable ?gram_syll.
         ?gram_syll pdp:grammaticalSyllableNumber ?gram_syll_number.
         OPTIONAL{
@@ -451,6 +467,11 @@ WHERE{
         }
         OPTIONAL{
             ?gram_syll pdp:isGrammaticalSyllableAnalysedBy ?met_syll_unit.
+        }
+        OPTIONAL{
+            ?line pdp:isLineAffectedBy ?enjambent.
+            ?enjambent pdp:typeOfEnjambment ?enj_type.
+            ?enj_type rdfs:label ?type_of_enjambment.
         }
     }
 
@@ -473,9 +494,13 @@ WHERE{
 
     OPTIONAL{
         ?line pdp:hasRhyme ?rhyme.
-        ?rhyme pdp:presentsRhymeMatching ?rhyme_matching;
-            pdp:rhymeLabel ?rhyme_label;
-            pdp:rhymeGrapheme ?rhyme_grapheme.
+        OPTIONAL{
+            ?rhyme pdp:hasRhymeMatch ?rhyme_match;
+                pdp:rhymeLabel ?rhyme_label.
+                # pdp:rhymeGrapheme ?rhyme_grapheme.
+            ?rhyme_match pdp:typeOfRhymeMatching ?rhyme_matching_type.
+            ?rhyme_matching_type rdfs:label ?rhyme_matching.
+        }
     }
    
     OPTIONAL{
@@ -553,5 +578,18 @@ CONTEXT = {
     "scansions": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-core#scansions"},
     "typeOfScansion": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#typeOfScansion"},
     "employedTechnique": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-core#employedTechnique",
-                          "@type": "@id"}
+                          "@type": "@id"},
+    "lineList":{"@id": "http://postdata.linhd.uned.es/ontology/postdata-core#lineList"},
+    "stanzaList":{"@id": "http://postdata.linhd.uned.es/ontology/postdata-core#stanzaList"},
+    "stanzaNumber":{"@id": "http://postdata.linhd.uned.es/ontology/postdata-core#stanzaNumber"},
+    "typeOfRhymeMatching":{"@id": "http://postdata.linhd.uned.es/ontology/postdata-core#typeOfRhymeMatching"},
+    "rhyme":{"@id": "http://postdata.linhd.uned.es/ontology/postdata-core#rhyme"},
+    "rhymeLabel":{"@id": "http://postdata.linhd.uned.es/ontology/postdata-core#rhymeLabel"},
+    "isWordAnalysedBy": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#isWordAnalysedBy"},
+    "enjambment": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#enjambment"},
+    "affectLine": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#affectLine"},
+    "typeOfEnjambment": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#typeOfEnjambment"},
+    "metaplasm": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#metaplasm"},
+    "typeOfMetaplasm": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#typeOfMetaplasm"},
+    "affectsFirstWord": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#affectsFirstWord"}
 }
