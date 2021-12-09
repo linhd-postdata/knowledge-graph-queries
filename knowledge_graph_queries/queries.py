@@ -213,23 +213,23 @@ WHERE{
     }
             
     OPTIONAL{
-    ?author pdc:wasBorn ?birth.
-        OPTIONAL{
-            ?birth pdc:hasTimeSpan ?birthSpan.
-            ?birthSpan pdc:date ?birthDate.
-        }
-        OPTIONAL{
-            ?birth pdc:tookPlaceAt ?birthPlace.
+	?author pdc:wasBorn ?birth.
+	    OPTIONAL{
+	        ?birth pdc:hasTimeSpan ?birthSpan.
+	        ?birthSpan pdc:date ?birthDate.
+	    }
+    	OPTIONAL{
+    	    ?birth pdc:tookPlaceAt ?birthPlace.
             ?birthPlace rdfs:label ?birthPlaceLabel.
-        }
+    	}
     }
 
     OPTIONAL{
-    ?author pdc:diedIn ?death.
-        OPTIONAL{
+	?author pdc:diedIn ?death.
+	    OPTIONAL{
             ?death pdc:hasTimeSpan ?deathSpan.
             ?deathSpan pdc:date ?deathDate.
-        }
+	    }
         OPTIONAL{
             ?death pdc:tookPlaceAt ?deathPlace.
             ?deathPlace rdfs:label ?deathPlaceLabel.
@@ -237,7 +237,7 @@ WHERE{
     }
     
     OPTIONAL{
-    ?author pdc:portrait ?portrait.
+	?author pdc:portrait ?portrait.
     }
 
     OPTIONAL{
