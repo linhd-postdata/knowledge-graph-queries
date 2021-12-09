@@ -139,13 +139,7 @@ def get_scansion(uri):
     conn = get_db()
     results = conn.graph(query, content_type=stardog.content_types.LD_JSON)
     json_ld_result = json.loads(results)
-    framed = jsonld.frame(json_ld_result,
-        {
-            "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#hasStanza": {
-                "@embed": "@always",
-            }
-        }
-    )
+    framed = jsonld.frame(json_ld_result, {})
     compacted = jsonld.compact(framed, CONTEXT)
     graph = compacted.get("@graph")
     return graph
