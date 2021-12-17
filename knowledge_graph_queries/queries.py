@@ -319,7 +319,7 @@ CONSTRUCT{
 WHERE
 
 {
-    BIND (<$> AS ?poetic_work)
+    BIND (?uri AS ?poetic_work)
     ?poetic_work a pdc:PoeticWork;                                                                     
         pdc:isRealisedThrough ?redaction.
     
@@ -359,7 +359,7 @@ WHERE
 }
     ''',
     'scansion_structure':
-    '''
+    '''    
 CONSTRUCT{
     ?scansion
         pdp:stanzaList ?stanza;
@@ -412,13 +412,13 @@ CONSTRUCT{
     ?met_syll pdp:metricalSyllableNumber ?met_syll_number;
         pdp:isStressed ?is_stressed_m;
         pdp:content ?met_syll_text;
-        pdp:isMetricalSyllableAnalysedBy ?met_syll_unit.
+        pdp:isMetricalSyllableAnalysedBy ?met_syll_unit. # We don't have this in spanish meter.
     
     # Add Metaplasm
-    ?scansion pdp:enjambent ?enjambent;
+    ?scansion pdp:enjambment ?enjambment;
         pdp:metaplasm ?metaplasm.
     
-    ?enjambent pdp:affectLine ?line;
+    ?enjambment pdp:affectsLine ?line;
         pdp:typeOfEnjambment ?type_of_enjambment.
     
     ?metaplasm pdp:typeOfMetaplasm ?type_of_metaplasm;
@@ -427,7 +427,7 @@ CONSTRUCT{
 
 WHERE{
     BIND (<$> AS ?scansion)
-
+    
     ?scansion a pdp:Scansion;
         pdp:hasStanza ?stanza.
     
@@ -463,14 +463,15 @@ WHERE{
         ?line pdp:hasGrammaticalSyllable ?gram_syll.
         ?gram_syll pdp:grammaticalSyllableNumber ?gram_syll_number.
         OPTIONAL{
-            ?gram_syll pdp:isStressed ?is_stressed_g.
+            ?gram_syll pdp:isStressed ?is_stressed_g;
+                pdp:content ?gram_syll_text.
         }
         OPTIONAL{
-            ?gram_syll pdp:isGrammaticalSyllableAnalysedBy ?met_syll_unit.
+            ?gram_syll pdp:isGrammaticalSyllableAnalysedBy ?gram_syll_unit.
         }
         OPTIONAL{
-            ?line pdp:isLineAffectedBy ?enjambent.
-            ?enjambent pdp:typeOfEnjambment ?enj_type.
+            ?line pdp:isLineAffectedBy ?enjambment.
+            ?enjambment pdp:typeOfEnjambment ?enj_type.
             ?enj_type rdfs:label ?type_of_enjambment.
         }
     }
@@ -494,9 +495,9 @@ WHERE{
 
     OPTIONAL{
         ?line pdp:hasRhyme ?rhyme.
+        ?rhyme pdp:rhymeLabel ?rhyme_label.
         OPTIONAL{
-            ?rhyme pdp:hasRhymeMatch ?rhyme_match;
-                pdp:rhymeLabel ?rhyme_label.
+            ?rhyme pdp:hasRhymeMatch ?rhyme_match.
                 # pdp:rhymeGrapheme ?rhyme_grapheme.
             ?rhyme_match pdp:typeOfRhymeMatching ?rhyme_matching_type.
             ?rhyme_matching_type rdfs:label ?rhyme_matching.
@@ -558,11 +559,11 @@ CONTEXT = {
                        "@type": "@id"},
     "isRealisedThrough": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-core#isRealisedThrough"},
     "text": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-core#text"},
-    "hasMetricalSyllable": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#hasMetricalSyllable",
+    "metricalSyllableList": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#hasMetricalSyllable",
                             "@type": "@id"},
-    "hasWord": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#hasWord",
+    "wordList": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#hasWord",
                 "@type": "@id"},
-    "hasGrammaticalSyllable": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#hasGrammaticalSyllable",
+    "grammaticalSyllableList": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#hasGrammaticalSyllable",
                                "@type": "@id"},
     "grammaticalSyllableNumber": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#grammaticalSyllableNumber"},
     "metricalSyllableNumber": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#metricalSyllableNumber"},
@@ -577,19 +578,24 @@ CONTEXT = {
     "wordNumber": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#wordNumber"},
     "scansions": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-core#scansions"},
     "typeOfScansion": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#typeOfScansion"},
-    "employedTechnique": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-core#employedTechnique",
+    "employedTechnique": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#employedTechnique",
                           "@type": "@id"},
-    "lineList":{"@id": "http://postdata.linhd.uned.es/ontology/postdata-core#lineList"},
-    "stanzaList":{"@id": "http://postdata.linhd.uned.es/ontology/postdata-core#stanzaList"},
-    "stanzaNumber":{"@id": "http://postdata.linhd.uned.es/ontology/postdata-core#stanzaNumber"},
-    "typeOfRhymeMatching":{"@id": "http://postdata.linhd.uned.es/ontology/postdata-core#typeOfRhymeMatching"},
-    "rhyme":{"@id": "http://postdata.linhd.uned.es/ontology/postdata-core#rhyme"},
-    "rhymeLabel":{"@id": "http://postdata.linhd.uned.es/ontology/postdata-core#rhymeLabel"},
-    "isWordAnalysedBy": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#isWordAnalysedBy"},
+    "lineList":{"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#lineList"},
+    "stanzaList":{"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#stanzaList"},
+    "stanzaNumber":{"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#stanzaNumber"},
+    "typeOfRhymeMatching":{"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#typeOfRhymeMatching"},
+    "rhyme":{"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#rhyme"},
+    "rhymeLabel":{"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#rhymeLabel"},
+    "isWordAnalysedBy": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#isWordAnalysedBy",
+                         "@type": "@id"},
     "enjambment": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#enjambment"},
-    "affectLine": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#affectLine"},
+    "affectLine": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#affectLine",
+                   "@type": "@id"},
     "typeOfEnjambment": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#typeOfEnjambment"},
     "metaplasm": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#metaplasm"},
     "typeOfMetaplasm": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#typeOfMetaplasm"},
-    "affectsFirstWord": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#affectsFirstWord"}
+    "affectsFirstWord": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#affectsFirstWord",
+                         "@type": "@id"},
+    "affectsLine": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#affectsLine",
+                    "@type": "@id"},
 }
