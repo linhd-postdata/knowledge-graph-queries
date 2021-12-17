@@ -136,7 +136,6 @@ def get_scansion(uri):
     shceme, tropes, intertextuality, etc.)
     """
     query = QUERIES['scansion_structure'].replace('$', uri)
-    print(query)
     conn = get_db()
     results = conn.graph(query, content_type=stardog.content_types.LD_JSON)
     json_ld_result = json.loads(results)
