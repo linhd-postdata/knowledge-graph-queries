@@ -136,13 +136,46 @@ def get_scansion(uri):
     shceme, tropes, intertextuality, etc.)
     """
     query = QUERIES['scansion_structure'].replace('$', uri)
+    print(query)
     conn = get_db()
     results = conn.graph(query, content_type=stardog.content_types.LD_JSON)
     json_ld_result = json.loads(results)
-    framed = jsonld.frame(json_ld_result, {})
+    framed = jsonld.frame(json_ld_result, {
+        "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#stanzaList":{
+            "@embed": "@always",
+            "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#lineList":{
+                    "@embed": "@always",
+                "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#hasMetricalSyllable":{
+                    "@embed": "@always",
+                },
+                "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#hasGrammaticalSyllable":{
+                    "@embed": "@always",
+                    "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#isGrammaticalSyllableAnalysedBy":{
+                        "@embed": "@never"
+                    }
+                },
+                "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#hasWord":{
+                    "@embed": "@always",
+                    "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#isWordAnalysedBy":{
+                        "@embed": "@never"
+                    }
+                },
+            },
+        },
+        "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#metaplasm":{
+            "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#affectsFirstWord":{
+                "@embed": "@never"
+            }
+        },
+        "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#enjambment":{
+            "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#affectsLine":{
+                "@embed": "@never"
+            }
+        }
+    })
     compacted = jsonld.compact(framed, CONTEXT)
-    graph = compacted.get("@graph")
-    return graph
+    del compacted["@context"]
+    return compacted
 
 
 def get_scansion_line(uri):
