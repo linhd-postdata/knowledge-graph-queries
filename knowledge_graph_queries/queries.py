@@ -295,7 +295,11 @@ WHERE{
     '''
 CONSTRUCT{
 
-    ?poetic_work pdc:isRealisedThrough ?redaction.
+    ?poetic_work pdc:isRealisedThrough ?redaction;
+        pdc:author ?ag.
+    
+    ?ag pdc:name ?pw_agent_name;
+        pdc:roleFunction ?pw_rf.
     
     ?redaction pdc:title ?title;
         pdc:genre ?genre;
@@ -319,9 +323,18 @@ CONSTRUCT{
 WHERE
 
 {
-    BIND (?uri AS ?poetic_work)
+    BIND (<$> AS ?poetic_work)
     ?poetic_work a pdc:PoeticWork;                                                                     
         pdc:isRealisedThrough ?redaction.
+         
+    OPTIONAL{
+        ?poetic_work pdc:wasInitiatedBy ?event.
+        ?event pdc:hasAgentRole ?ag.
+        ?ag pdc:hasAgent ?pw_agent.
+        ?pw_agent pdc:name ?pw_agent_name.
+        ?ag pdc:roleFunction ?pw_rf.
+        ?pw_rf rdfs:label ?pw_role.
+    }
     
     OPTIONAL{
         ?redaction pdc:title ?title.
