@@ -183,6 +183,18 @@ def get_scansion(uri):
     return compacted
 
 
+def get_scansion_file(id):
+    """Method to return all the information about a scansion.
+    It returns the file from the document store.
+
+    :param id: the ID of the file (name) in the document store.
+    :return JSON with information about a scansion"""
+    conn = get_db()
+    doc_store = conn.docs()
+    retrieved_file = doc_store.get(id)
+    return retrieved_file
+
+
 def get_scansion_line(uri):
     """Method to return detailed information for a scanned line
 
@@ -251,7 +263,8 @@ def connect_to_database():
         'password': 'admin'
     }
     # database_name = "PD_KG_SPA"
-    database_name = "PD_KG"
+    # database_name = "PD_KG"
+    database_name = "PD_KG_2"
     with stardog.Admin(**connection_details) as admin:
         if database_name in [db.name for db in admin.databases()]:
             return stardog.Connection(database_name, **connection_details)
