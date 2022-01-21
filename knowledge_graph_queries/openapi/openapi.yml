@@ -6,9 +6,9 @@ info:
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   version: "0.0.1"
 servers:
-  - url: http://62.204.199.252:5005
+  - url: /
     description: Production server
-  - url: http://localhost:5005/
+  - url: http://localhost:5000/
     description: Test server
 paths:
   /book/{title}:
@@ -58,6 +58,34 @@ paths:
             application/json:
               schema:
                 type: object
+                example:
+                  [
+                    {
+                      "@id": "http://postdata.linhd.uned.es/resource/pw_marques-de-santillana_iii",
+                      "author": "Marqués de Santillana",
+                      "title": "- III -"
+                    },
+                    {
+                      "@id": "http://postdata.linhd.uned.es/resource/pw_lope-de-vega_mira-zaide-que-te-aviso",
+                      "author": "Lope de Vega",
+                      "title": "-Mira, Zaide, que te aviso "
+                    },
+                    {
+                      "@id": "http://postdata.linhd.uned.es/resource/pw_amado-nervo_a-felipe-ii",
+                      "author": "Amado Nervo",
+                      "title": "A Felipe II"
+                    },
+                    {
+                      "@id": "http://postdata.linhd.uned.es/resource/pw_amado-nervo_a-jose-maria-de-heredia",
+                      "author": "Amado Nervo",
+                      "title": "A José María de Heredia"
+                    },
+                    {
+                      "@id": "http://postdata.linhd.uned.es/resource/pw_bernardo-de-vargas-machuca_a-juan-de-castellanos",
+                      "author": "Bernardo de Vargas Machuca",
+                      "title": "A Juan de Castellanos"
+                    }
+                  ]
 
   /authors:
     get:
@@ -351,4 +379,25 @@ paths:
         schema:
           type: string
           format: path
+        style: simple
+
+  /scansion/{id}:
+    get:
+      description: Gets a json file denoted by a scansion id
+      summary: Returns a json representation of the scansion identified by a certain id as stored in the document store
+      operationId: knowledge_graph_queries.get_scansion_file
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+    parameters:
+      - name: "id"
+        in: path
+        description: The URI of a scansion resource
+        required: true
+        schema:
+          type: string
         style: simple

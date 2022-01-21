@@ -304,14 +304,14 @@ CONSTRUCT{
     ?redaction pdc:title ?title;
         pdc:genre ?genre;
         pdc:text ?text;
-        pdc:contributor ?contributor;
         pdc:date ?date;
         pdc:alternativeTitle ?alternativeTitle;
         pdc:scansions ?scansion.
     
     ?scansion pdc:contributor ?sc_contributor;
         pdp:typeOfScansion ?scansion_type;
-        pdc:employedTechnique ?technique.
+        pdc:employedTechnique ?technique;
+        pdp:id ?scansion_id.
     
     ?sc_contributor pdc:name ?sc_agent_name;
         pdc:roleFunction ?sc_role.
@@ -349,25 +349,42 @@ WHERE
         ?redaction pdc:alternativeTitle ?alternativeTitle.
     }
 
+  
+    ?scansion_process a pdp:ScansionProcess;
+        pdp:generated ?scansion;
+        pdp:usedAsInput ?redaction.
+
+        
     OPTIONAL{
-        ?scansion_process a pdp:ScansionProcess;
-            pdp:generated ?scansion;
-            pdp:usedAsInput ?redaction.
-        OPTIONAL{
-            ?scansion_process pdp:employedTechnique ?technique.
-        }
-        OPTIONAL{
-            ?scansion_process pdc:hasAgentRole ?agentRole.
-            ?agentRole pdc:hasAgent ?agent;
-                pdc:roleFunction ?s_role.
-            ?agent pdc:name ?sc_agent_name.
-            ?s_role rdfs:label ?sc_role.
-        }
-        OPTIONAL{
-            ?scansion pdp:typeOfScansion ?sc_type.
-            ?sc_type rdfs:label ?scansion_type.
-        }
+        ?scansion_process pdp:employedTechnique ?technique.
     }
+        
+    OPTIONAL{
+        ?scansion_process pdc:hasAgentRole ?sc_contributor.
+        ?sc_contributor pdc:hasAgent ?agent;
+            pdc:roleFunction ?s_role.
+    }
+    
+    OPTIONAL{
+        ?agent pdc:name ?sc_agent_name.
+    }
+    OPTIONAL{
+        ?s_role rdfs:label ?sc_role.
+    }
+    OPTIONAL{
+        ?agent rdfs:label ?sc_agent_name.
+    }
+
+        
+    OPTIONAL{
+        ?scansion pdp:typeOfScansion ?sc_type.
+        ?sc_type rdfs:label ?scansion_type.
+    }
+        
+    OPTIONAL{
+        ?scansion pdp:id ?scansion_id.
+    }
+
 }
     ''',
     'scansion_structure':
@@ -537,8 +554,7 @@ CONTEXT = {
     "deathDate": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-core#deathDate",
                   "@type": "http://www.w3.org/2001/XMLSchema#dateTime"},
     "roleFunction": {
-        "@id": "http://postdata.linhd.uned.es/ontology/postdata-core#roleFunction",
-        "@type": "@id"},
+        "@id": "http://postdata.linhd.uned.es/ontology/postdata-core#roleFunction"},
     "birthDate": {
         "@id": "http://postdata.linhd.uned.es/ontology/postdata-core#birthDate",
         "@type": "http://www.w3.org/2001/XMLSchema#dateTime"},
@@ -569,7 +585,7 @@ CONTEXT = {
     "absoluteLineNumber": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#absoluteLineNumber"},
     "hasPunctuation": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#hasPunctuation",
                        "@type": "@id"},
-    "isRealisedThrough": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-core#isRealisedThrough"},
+    "redactions": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-core#isRealisedThrough"},
     "text": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-core#text"},
     "metricalSyllableList": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#hasMetricalSyllable",
                             "@type": "@id"},
@@ -590,8 +606,7 @@ CONTEXT = {
     "wordNumber": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#wordNumber"},
     "scansions": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-core#scansions"},
     "typeOfScansion": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#typeOfScansion"},
-    "employedTechnique": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#employedTechnique",
-                          "@type": "@id"},
+    "employedTechnique": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-core#employedTechnique"},
     "lineList":{"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#lineList"},
     "stanzaList":{"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#stanzaList"},
     "stanzaNumber":{"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#stanzaNumber"},
@@ -610,4 +625,7 @@ CONTEXT = {
                          "@type": "@id"},
     "affectsLine": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#affectsLine",
                     "@type": "@id"},
+    "file_id": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#id"},
+    "contributor": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-core#contributor",
+                    "@type": "@id"}
 }
