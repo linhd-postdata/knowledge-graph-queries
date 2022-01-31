@@ -136,9 +136,11 @@ def get_scansion(uri):
     shceme, tropes, intertextuality, etc.)
     """
     query = QUERIES['scansion_structure'].replace('$', uri)
+    print(query)
     conn = get_db()
     results = conn.graph(query, content_type=stardog.content_types.LD_JSON)
     json_ld_result = json.loads(results)
+    # print(json.dumps(json_ld_result, indent=2))
     framed = jsonld.frame(json_ld_result, {
         "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#stanzaList":{
             "@embed": "@always",
@@ -172,9 +174,25 @@ def get_scansion(uri):
             }
         }
     })
+    print(json.dumps(framed, indent=2))
     compacted = jsonld.compact(framed, CONTEXT)
+    # graph = compacted.get("@graph")
     del compacted["@context"]
+    with open('jsonld.json', 'w') as f:
+        json.dump(compacted, f)
     return compacted
+
+
+def get_scansion_file(id):
+    """Method to return all the information about a scansion.
+    It returns the file from the document store.
+
+    :param id: the ID of the file (name) in the document store.
+    :return JSON with information about a scansion"""
+    conn = get_db()
+    doc_store = conn.docs()
+    retrieved_file = doc_store.get(id)
+    return retrieved_file
 
 
 def get_scansion_line(uri):
