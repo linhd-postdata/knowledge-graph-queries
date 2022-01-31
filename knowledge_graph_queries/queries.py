@@ -166,6 +166,8 @@ WHERE{
 # Inlucdes personal information
 # Organisations the person may belong to
 # Poetic works and the number of editions for each work
+prefix pdc: <http://postdata.linhd.uned.es/ontology/postdata-core#>
+prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 
 CONSTRUCT{
     ?author pdc:portrait ?portrait;
@@ -174,9 +176,8 @@ CONSTRUCT{
         pdc:portrait ?portrait;
         pdc:additionalName ?additionalName;
         pdc:alternativeName ?alternativeName;
+      	pdc:penName ?penName;
         pdc:biography ?biography;
-        pdc:forename ?forename;
-        pdc:genName ?genName;
         pdc:ethnicity ?ethnicity;
         pdc:gender ?gender;
         pdc:works ?poeticWork;
@@ -186,7 +187,15 @@ CONSTRUCT{
         pdc:occupation ?occupation;
         pdc:birthPlace ?birthPlaceLabel;
         pdc:deathPlace ?deathPlaceLabel;
-        pdc:religiousAffiliation ?religion.
+        pdc:religiousAffiliation ?religion;
+    	pdc:hasDedication ?dedication_redaction;
+    	pdc:isMemberOf ?organisationName;
+    	pdc:socialStatus ?status;
+    	pdc:literaryPeriod ?literaryPeriod;
+    	pdc:assessedCertainty ?assessedCertainty;
+    	pdc:authorEducationLevel ?authorEducationLevel.
+  
+  	?dedication_redaction pdc:title ?dedication.
     
     ?poeticWork  pdc:roleFunction ?role;
         pdc:title ?title;
@@ -206,6 +215,35 @@ WHERE{
         pdc:hasAgent ?author.
     
     ?poeticWork pdc:title ?title.
+  
+  	OPTIONAL{
+    	?agentRole pdc:authorEducationLevel ?education.
+    	?education rdfs:label ?authorEducationLevel.
+  	}
+  
+  	OPTIONAL{
+   		?attributeAssignment pdc:assigned ?date;
+        	pdc:assignedAttributeTo ?author.
+    	?certaintyAssessment pdc:assessedCertainty ?certainty;
+        	pdc:isCertaintyAssessmentOf ?attributeAssignment.
+    	?certainty rdfs:label ?assessedCertainty.
+    	?date rdfs:type pdc:TimeSpan.
+  	}
+  
+  	OPTIONAL{
+    	?author pdc:literaryPeriod ?period.
+    	?period rdfs:label ?literaryPeriod.
+  	}
+  
+  	OPTIONAL{
+    	?author pdc:socialStatus ?status.
+    	?status rdfs:label ?socialStatus.
+  	}
+  
+  	OPTIONAL{
+    	?author pdc:hasDedication ?dedication_redaction.
+    	?dedication_redaction pdc:title ?dedication.
+  	}
     
     OPTIONAL{
         ?creation pdc:hasTimeSpan ?timeSpan.
@@ -249,17 +287,14 @@ WHERE{
         OPTIONAL{
         ?author pdc:additionalName ?additionalName.
     }
+      OPTIONAL{
+        ?author pdc:penName ?penName.
+    }
         OPTIONAL{
         ?author pdc:alternativeName ?alternativeName.
     }
         OPTIONAL{
         ?author pdc:biography ?biography.
-    }
-        OPTIONAL{
-        ?author pdc:forename ?forename.
-    }
-        OPTIONAL{
-        ?author pdc:genName ?genName.
     }
         OPTIONAL{
         ?author pdc:ethnicity ?etn.
@@ -293,20 +328,80 @@ WHERE{
     ''',
     'redactions':
     '''
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+prefix pdc: <http://postdata.linhd.uned.es/ontology/postdata-core#>
+prefix pdp: <http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#>
+prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
 CONSTRUCT{
 
     ?poetic_work pdc:isRealisedThrough ?redaction;
-        pdc:author ?ag.
+        pdc:author ?ag;
+    	pdc:date ?poetic_work_date;
+    	pdc:literaryTradition ?literaryTradition;
+    	pdc:alternativeTitle ?poetic_work_alternativeTitle;
+    	pdc:poeticType ?poeticType;
+    	pdc:title ?pw_title;
+    	pdc:originalTitle ?pw_originalTitle;
+    	pdc:subtitle ?pw_subtitle;
+    	pdc:genre ?pw_genre;
+    	pdc:hasNarrativeLocation ?narrativeLocation;
+    	pdc:hasSynthesis ?pw_has_synthesis;
+    	pdc:isSynthesisOf ?pw_is_synthesis;
+    	pdc:authorship ?authorship;
+    	pdc:isIntendedFor ?isIntendedFor;
+    	pdc:isAbout ?entity;
+    	pdc:hasDerivative ?hasDerivative;
+    	pdc:isWorkOf ?isWorkOf.
+  
+  	?isWorkOf pdc:title ?isWorkOf_title.
+  	?hasDerivative pdc:title ?hasDerivative_title.
+  
+  	?entity pdc:entityType ?entity_type_label;
+    	pdc:entityLabel ?entity_label.
+  
+  	?pw_has_synthesis pdc:title ?pw_has_synthesis_title.
+  	?pw_is_synthesis pdc:title ?pw_is_synthesis_title.
     
     ?ag pdc:name ?pw_agent_name;
         pdc:roleFunction ?pw_rf.
     
     ?redaction pdc:title ?title;
-        pdc:genre ?genre;
+        pdc:genre ?redaction_genre;
         pdc:text ?text;
-        pdc:date ?date;
-        pdc:alternativeTitle ?alternativeTitle;
-        pdc:scansions ?scansion.
+        pdc:date ?redaction_date;
+        pdc:alternativeTitle ?redaction_alternativeTitle;
+        pdc:scansions ?scansion;
+    	pdc:contributor ?r_agent;
+    	pdc:originalTitle ?redaction_originalTitle;
+    	pdc:subtitle ?redaction_subtitle;
+    	pdc:hasLanguage ?hasLanguage;
+    	pdc:typeOfTextualElement ?typeOfTextualElement;
+    	pdc:mentions ?mentioned_entity;
+    	pdc:typeOfRedaction ?typeOfRedaction;
+    	pdc:dedicatedTo ?dedicatedTo;
+    	pdc:audienceEducationLevel ?audienceEducationLevel;
+    	pdc:isRepresentativeExpressionFor ?representative_pw;
+    	pdc:hasTranslation ?has_translation_redaction;
+    	pdc:isTranslationOf ?is_translation_redaction;
+    	pdc:incorporates ?incorporates_redaction;
+    	pdc:isIncorporatedIn ?is_incorporated_redaction;
+    	pdc:audience ?audience;
+    	pdc:hasCommentary ?hasCommentary;
+    	pdc:hasIncipit ?hasIncipit;
+    	pdc:hasExicipt ?hasExcipit.
+  
+    ?is_incorporated_redaction pdc:title ?is_incorporated_redaction_title.
+    ?incorporates_redaction pdc:title ?incorporates_redaction_title.
+    ?is_translation_redaction pdc:title ?is_translation_redaction_title.
+    ?has_translation_redaction pdc:title ?has_translation_redaction_title.
+    ?representative_pw pdc:title ?representative_pw_title.
+  
+  	?mentioned_entity pdc:entityType ?mentioned_entity_type_label;
+    	pdc:entityLabel ?mentioned_entity_label.
+  
+  	?r_agent pdc:name ?redaction_agent_name;
+    	pdc:roleFunction ?redaction_agent_role.
     
     ?scansion pdc:contributor ?sc_contributor;
         pdp:typeOfScansion ?scansion_type;
@@ -315,9 +410,6 @@ CONSTRUCT{
     
     ?sc_contributor pdc:name ?sc_agent_name;
         pdc:roleFunction ?sc_role.
-    
-    ?contributor pdc:name ?name;
-        pdc:roleFunction ?role.
 }
 
 WHERE
@@ -335,25 +427,187 @@ WHERE
         ?ag pdc:roleFunction ?pw_rf.
         ?pw_rf rdfs:label ?pw_role.
     }
+  
+  OPTIONAL{
+   	?redaction pdc:hasCommentary ?hasCommentary. 
+  }
+  
+  OPTIONAL{
+  	?redaction pdc:hasExcipit ?hasExcipit. 
+  }
+  
+  OPTIONAL{
+   	?redaction pdc:hasIncipit ?hasIncipit. 
+  }
+  
+  OPTIONAL{
+    ?redaction pdc:audience ?audience_concept.
+    ?audience_concept rdfs:label ?audience.
+  }
+  
+   OPTIONAL{
+   	?redaction pdc:isIncorporatedIn ?is_incorporated_redaction.
+    ?is_incorporated_redaction pdc:title ?is_incorporated_redaction_title.
+  }
+  
+  OPTIONAL{
+   	?redaction pdc:incorporates ?incorporates_redaction.
+    ?incorporates_redaction pdc:title ?incorporates_redaction_title.
+  }
+  
+  OPTIONAL{
+   	?redaction pdc:isTranslationOf ?is_translation_redaction.
+    ?is_translation_redaction pdc:title ?is_translation_redaction_title.
+  }
+  
+  OPTIONAL{
+   	?redaction pdc:hasTranslation ?has_translation_redaction.
+    ?has_translation_redaction pdc:title ?has_translation_redaction_title.
+  }
+  
+  OPTIONAL{
+   	?redaction pdc:isRepresentativeExpressionFor ?representative_pw.
+    ?representative_pw pdc:title ?representative_pw_title.
+  }
+  
+  OPTIONAL{
+   	?redaction pdc:audienceEducationLevel ?audienceLevel.
+    ?audienceLevel rdfs:label ?audienceEducationLevel.
+  }
+  OPTIONAL{
+   	?redaction pdc:dedicatedTo ?dedicated_redaction.
+    ?dedicated_redaction pdc:name ?dedicatedTo.
+  }
+  OPTIONAL{
+   	?redaction pdc:typeOfRedaction ?redaction_type.
+    ?redaction_type rdfs:label ?typeOfRedaction.
+  }
+  
+  OPTIONAL{
+   	?redaction pdc:mentions ?mentioned_entity.
+  	?mentioned_entity pdc:entityType ?mentioned_entity_type_label;
+    	pdc:entityLabel ?mentioned_entity_label. 
+  }
+  OPTIONAL{
+  	?redaction pdc:hasLanguage ?redaction_language.
+    ?redaction_language rdfs:label ?hasLanguage.
+  }  
+  OPTIONAL{
+  	?redaction pdc:typeOfTextualElement ?textualElement.
+    ?textualElement rdfs:label ?typeOfTextualElement.
+  }
+  OPTIONAL{
+   	?redaction pdc:subtitle ?redaction_subtitle. 
+  }
+    OPTIONAL{
+   	?redaction pdc:originalTitle ?redaction_originalTitle. 
+  }
+  
+  OPTIONAL{
+   	?poetic_work pdc:isWorkOf ?isWorkOf.
+    ?isWorkOf pdc:title ?isWorkOf_title.
+  }
+  
+  OPTIONAL{
+   	?poetic_work pdc:hasDerivative ?hasDerivative.
+    ?hasDerivative pdc:title ?hasDerivative_title.
+  }
+  
+  OPTIONAL{
+   	?poetic_work pdc:isAbout ?entity.
+    ?entity rdf:type ?entity_type.
+  	?entity_type rdfs:label ?entity_type_label.
+    ?entity rdfs:label ?entity_label.
+  }
+  
+  OPTIONAL{
+   	?poetic_work pdc:isIntendedFor ?intended_person.
+    ?intended_person pdc:name ?isIntendedFor.
+  }
+  
+  OPTIONAL{
+   	?poetic_work pdc:authorship ?_authorship.
+    ?_authorship rdfs:label ?authorship.
+  }
+  
+  	OPTIONAL{
+    	?poetic_work pdc:hasSynthesis ?pw_has_synthesis.
+    	?pw_has_synthesis pdc:title ?pw_has_synthesis_title.
+  	}
+  
+  OPTIONAL{
+    	?poetic_work pdc:isSynthesisOf ?pw_is_synthesis.
+    	?pw_is_synthesis pdc:title ?pw_is_synthesis_title.
+  	}
+  
+  	OPTIONAL{
+    	?poetic_work pdc:hasNarrativeLocation ?narrativeLocation.
+  	}
+  
+  	OPTIONAL{
+    	?poetic_work pdc:originalTitle ?pw_originalTitle.
+  	}
+  	OPTIONAL{
+    	?poetic_work pdc:title ?pw_title.
+  	}
+  
+  	OPTIONAL{
+    	?poetic_work pdc:subtitle ?pw_subtitle.
+  	}
+  
+  	OPTIONAL{
+    	?poetic_work pdc:genre ?pw_genre.
+  	}
+  
+  	OPTIONAL{
+    	?poetic_work pdc:poeticType ?poetic_type.
+    	?poetic_type rdfs:label ?poeticType.
+  	}
+  
+  	OPTIONAL{
+    	?poetic_work pdc:literaryTradition ?tradition.
+    	?tradition rdfs:label ?literaryTradition.
+  	}
+  
+  	OPTIONAL{
+    	?poetic_work pdc:alternativeTitle ?poetic_work_alternativeTitle.
+  	}
+  
+  	OPTIONAL{
+    	?redaction pdc:wasCreatedByExpressionCreationForExpression ?ex_creation.
+    	?ex_creation pdc:hasAgent ?r_agent.
+    	?r_agent pdc:name ?redaction_agent_name.
+    	?r_agent pdc:roleFunction ?redaction_agent_role.
+  	}
     
     OPTIONAL{
         ?redaction pdc:title ?title.
     }
     OPTIONAL{
-        ?redaction pdc:genre ?genre.
+        ?redaction pdc:genre ?redaction_genre.
     }
     OPTIONAL{
-        ?redaction pdc:text ?text.
+      ?redaction pdc:text ?text.
     }
     OPTIONAL{
-        ?redaction pdc:alternativeTitle ?alternativeTitle.
+      ?redaction pdc:alternativeTitle ?redaction_alternativeTitle.
     }
+  	OPTIONAL{
+    	?creation pdc:initiated ?poetic_work;
+               pdc:hasTimeSpan ?sp.
+    	?sp pdc:date ?poetic_work_date.
+  	}
+  	OPTIONAL{
+    	?creation pdc:createdExpressionFromExpressionCreation ?redaction;
+               pdc:hasTimeSpan ?sp.
+    	?sp pdc:date ?redaction_date.
+  	}
 
-  
-    ?scansion_process a pdp:ScansionProcess;
-        pdp:generated ?scansion;
-        pdp:usedAsInput ?redaction.
-
+  	OPTIONAL{
+      ?scansion_process a pdp:ScansionProcess;
+          pdp:generated ?scansion;
+          pdp:usedAsInput ?redaction.
+  	}
         
     OPTIONAL{
         ?scansion_process pdp:employedTechnique ?technique.
@@ -389,160 +643,7 @@ WHERE
     ''',
     'scansion_structure':
     '''    
-CONSTRUCT{
-    ?scansion
-        pdp:stanzaList ?stanza;
-        pdp:workPattern ?redaction_pattern.
-    
-    ?redaction_pattern
-        pdp:metricalCategory ?metrical_category.
 
-    ?stanza
-        pdp:stanzaPattern ?stanza_pattern;
-        pdp:content ?stanza_content;
-        pdp:lineList ?line;
-        pdp:typeOfStanza ?type_of_stanza;
-        pdp:stanzaNumber ?stanza_number.
-    
-    ?line
-        pdp:hasLinePattern ?line_pattern;
-        pdp:relativeLineNumber ?relative_line_number;
-        pdp:absoluteLineNumber ?absolute_line_number;
-        pdp:content ?line_content;
-        pdp:rhyme ?rhyme.
-    
-    ?line_pattern
-        pdp:patterningMetricalScheme ?patterning_metrical_scheme.
-
-    ?stanza_pattern
-        pdp:rhymeScheme ?stanza_type.
-    
-    ?rhyme
-        pdp:typeOfRhymeMatching ?rhyme_matching;
-        pdp:rhymeLabel ?rhyme_label.
-        
-    # pdp:rhymeGrapheme ?rhyme_grapheme.
-    
-    # Q2
-    ?line pdp:hasWord ?word;
-        pdp:hasGrammaticalSyllable ?gram_syll;
-        pdp:hasMetricalSyllable ?met_syll;
-        pdp:hasPunctuation ?punctuation.
-    
-    ?word pdp:content ?word_content;
-        pdp:isWordAnalysedBy ?word_unit;
-        pdp:wordNumber ?word_number.
-    
-    ?gram_syll pdp:grammaticalSyllableNumber ?gram_syll_number;
-        pdp:isStressed ?is_stressed_g;
-        pdp:content ?gram_syll_text;
-        pdp:isGrammaticalSyllableAnalysedBy ?gram_syll_unit.
-    
-    ?met_syll pdp:metricalSyllableNumber ?met_syll_number;
-        pdp:isStressed ?is_stressed_m;
-        pdp:content ?met_syll_text;
-        pdp:isMetricalSyllableAnalysedBy ?met_syll_unit. # We don't have this in spanish meter.
-    
-    # Add Metaplasm
-    ?scansion pdp:enjambment ?enjambment;
-        pdp:metaplasm ?metaplasm.
-    
-    ?enjambment pdp:affectsLine ?line;
-        pdp:typeOfEnjambment ?type_of_enjambment.
-    
-    ?metaplasm pdp:typeOfMetaplasm ?type_of_metaplasm;
-        pdp:affectsFirstWord ?word.
-}
-
-WHERE{
-    BIND (<$> AS ?scansion)
-    
-    ?scansion a pdp:Scansion;
-        pdp:hasStanza ?stanza.
-    
-    ?stanza a pdp:Stanza;
-        pdp:stanzaNumber ?stanza_number;
-        pdp:content ?stanza_content;
-        pdp:hasLine ?line.
-    
-    OPTIONAL{
-        ?stanza pdp:typeOfStanza ?type_of_stanza.
-    }
-    
-    ?line a pdp:Line;
-        pdp:relativeLineNumber ?relative_line_number;
-        pdp:absoluteLineNumber ?absolute_line_number;
-        pdp:content ?line_content;
-        pdp:hasWord ?word.
-    
-    ?word pdp:wordNumber ?word_number;
-        pdp:content ?word_content.
-    
-    OPTIONAL{
-        ?word pdp:isWordAnalysedBy ?word_unit.
-    }
-
-    OPTIONAL{
-        ?word pdp:isFirstWordAffectedBy ?metaplasm.
-        ?metaplasm pdp:typeOfMetaplasm ?mtp_type.
-        ?mtp_type rdfs:label ?type_of_metaplasm.
-    }
-
-    OPTIONAL{
-        ?line pdp:hasGrammaticalSyllable ?gram_syll.
-        ?gram_syll pdp:grammaticalSyllableNumber ?gram_syll_number.
-        OPTIONAL{
-            ?gram_syll pdp:isStressed ?is_stressed_g;
-                pdp:content ?gram_syll_text.
-        }
-        OPTIONAL{
-            ?gram_syll pdp:isGrammaticalSyllableAnalysedBy ?gram_syll_unit.
-        }
-        OPTIONAL{
-            ?line pdp:isLineAffectedBy ?enjambment.
-            ?enjambment pdp:typeOfEnjambment ?enj_type.
-            ?enj_type rdfs:label ?type_of_enjambment.
-        }
-    }
-
-    OPTIONAL{
-        ?line pdp:hasMetricalSyllable ?met_syll.
-        ?met_syll pdp:isStressed ?is_stressed_m;
-            pdp:metricalSyllableNumber ?met_syll_number.
-    }
-
-    OPTIONAL{
-        ?line pdp:hasPunctuation ?punctuation.
-        ?punctuation pdp:content ?punctuation_content.
-        OPTIONAL{
-            ?punctuation pdp:before ?before_word.
-        }
-        OPTIONAL{
-            ?punctuation pdp:after ?after_word.
-        }
-    }
-
-    OPTIONAL{
-        ?line pdp:hasRhyme ?rhyme.
-        ?rhyme pdp:rhymeLabel ?rhyme_label.
-        OPTIONAL{
-            ?rhyme pdp:hasRhymeMatch ?rhyme_match.
-                # pdp:rhymeGrapheme ?rhyme_grapheme.
-            ?rhyme_match pdp:typeOfRhymeMatching ?rhyme_matching_type.
-            ?rhyme_matching_type rdfs:label ?rhyme_matching.
-        }
-    }
-   
-    OPTIONAL{
-        ?line pdp:hasLinePattern ?line_pattern.
-        ?line_pattern pdp:patterningMetricalScheme ?patterning_metrical_scheme.
-    }
-
-    OPTIONAL{
-        ?stanza pdp:hasStanzaPattern ?stanza_pattern.
-        ?stanza_pattern pdp:rhymeScheme ?stanza_type.
-    }
-}
     '''}
 
 CONTEXT = {
