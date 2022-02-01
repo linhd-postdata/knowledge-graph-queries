@@ -380,24 +380,3 @@ paths:
           type: string
           format: path
         style: simple
-
-  /scansion/{id}:
-    get:
-      description: Gets a json file denoted by a scansion id
-      summary: Returns a json representation of the scansion identified by a certain id as stored in the document store
-      operationId: knowledge_graph_queries.get_scansion_file
-      responses:
-        200:
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-    parameters:
-      - name: "id"
-        in: path
-        description: The URI of a scansion resource
-        required: true
-        schema:
-          type: string
-        style: simple

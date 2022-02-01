@@ -8,6 +8,5 @@ from .core import get_book  # noqa
 from .core import get_author_profile
 from .core import get_redactions
 from .core import get_scansion
-from .core import get_scansion_file
-from .queries import QUERIES, CONTEXT
+from .queries import QUERIES, CONTEXT, CONTEXT_QUERY
 from .app import app  # noqa
