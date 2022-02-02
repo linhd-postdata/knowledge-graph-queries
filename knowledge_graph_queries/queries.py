@@ -341,6 +341,7 @@ WHERE{
     'redactions':
     '''
 
+
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 prefix pdc: <http://postdata.linhd.uned.es/ontology/postdata-core#>
 prefix pdp: <http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#>
@@ -375,8 +376,10 @@ CONSTRUCT{
   	?pw_has_synthesis pdc:title ?pw_has_synthesis_title.
   	?pw_is_synthesis pdc:title ?pw_is_synthesis_title.
     
-    ?ag pdc:name ?pw_agent_name;
+    ?ag pdc:hasAgent ?pw_agent;
         pdc:roleFunction ?pw_rf.
+    
+    ?pw_agent pdc:name ?pw_agent_name.
     
     ?redaction pdc:title ?title;
         pdc:genre ?redaction_genre;
