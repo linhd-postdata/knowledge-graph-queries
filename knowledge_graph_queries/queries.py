@@ -1207,5 +1207,6 @@ CONTEXT = {
         "@type": "@id"},
     "presentsRhyme": {
         "@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#presentsRhyme",
-        "@type": "@id"}
+        "@type": "@id"},
+    "hasAgent": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-core#hasAgent"}
 }
