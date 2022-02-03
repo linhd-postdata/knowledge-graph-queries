@@ -430,7 +430,7 @@ CONSTRUCT{
 # FROM <tag:stardog:api:context:local>
 WHERE
 {
-    BIND (<http://postdata.linhd.uned.es/resource/pw_francisco-de-quevedo_este-amor-que-yo-alimento> AS ?poetic_work)
+    BIND (<$> AS ?poetic_work)
     ?poetic_work a pdc:PoeticWork;                                                                     
         pdc:isRealisedThrough ?redaction.
   
