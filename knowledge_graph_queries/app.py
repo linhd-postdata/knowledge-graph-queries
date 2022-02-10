@@ -5,7 +5,8 @@ from flask import g
 from flask_cors import CORS
 
 app = connexion.App(__name__, options={"swagger_ui": True})
-
+app.add_api('openapi/openapi.yml')
+CORS(app.app)
 
 @app.app.teardown_appcontext
 def teardown_db(exception):
@@ -13,8 +14,6 @@ def teardown_db(exception):
 
     if db is not None:
         db.close()
-
-CORS(app.app)
 
 if __name__ == "__main__":  # pragma: no cover
     app.run(port=os.environ.get("PORT", 5005), specification_dir='./openapi/')
