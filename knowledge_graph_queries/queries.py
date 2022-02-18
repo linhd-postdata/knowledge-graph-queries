@@ -599,10 +599,12 @@ CONSTRUCT{
         pdp:scannedLine ?scannedLine ;
         pdp:feetType ?feetType ;
         pdp:vowelTypeScheme ?vowelTypeScheme ;
-        pdp:syllabicMetricalScheme ?syllabicMetricalScheme ;
-        pdp:altSyllabicMetricalScheme ?altSyllabicMetricalScheme ;
+        pdp:syllabicMetricalLength ?syllabicMetricalLength;
+        pdp:altSyllabicMetricalLength ?altSyllabicMetricalLength;
         pdp:moraeMetricalScheme ?moraeMetricalScheme ;
-        pdp:altMoraeMetricalScheme ?altMoraeMetricalScheme.
+        pdp:altMoraeMetricalScheme ?altMoraeMetricalScheme;
+        pdp:lineMaxlength ?lineMaxLength;
+        pdp:lineMinLength ?lineMinLength.
 
     # Q2
     ?line pdp:hasWord ?word;
@@ -703,8 +705,16 @@ WHERE{
     	?trope_excerpt pdp:hasStartingLine ?tropeStartingLine;
                        	pdp:hasEndingLine ?tropeEndingLine.
   	}
-
-
+    OPTIONAL{
+    	?line pdp:lineMaxlength ?lineMaxLength;
+    	    pdp:lineMinLength ?lineMinLength.
+  	}
+  	OPTIONAL{
+    	?line pdp:syllabicMetricalLength ?syllabicMetricalLength.
+  	}
+    OPTIONAL{
+    	?line pdp:altSyllabicMetricalLength ?altSyllabicMetricalLength.
+  	}
   	OPTIONAL{
     	?word pdp:ending ?ending.
   	}
@@ -782,12 +792,6 @@ WHERE{
   	}
         	OPTIONAL{
     	?line pdp:vowelTypeScheme ?vowelTypeScheme.
-  	}
-        	OPTIONAL{
-    	?line pdp:syllabicMetricalScheme ?syllabicMetricalScheme.
-  	}
-        	OPTIONAL{
-    	?line pdp:altSyllabicMetricalScheme ?altSyllabicMetricalScheme.
   	}
         	OPTIONAL{
     	?line pdp:moraeMetricalScheme ?moraeMetricalScheme.
@@ -1105,7 +1109,14 @@ CONTEXT_QUERY = {
         "@type": "http://www.w3.org/2001/XMLSchema#nonNegativeInteger"
     },
     "metricalType":{"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#metricalType"},
-    "grammaticalStressPattern": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#grammaticalStressPattern"}
+    "grammaticalStressPattern": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#grammaticalStressPattern"},
+    "syllabicMetricalLength": {
+        "@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#syllabicMetricalLength"},
+    "lineMaxLength": {
+        "@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#lineMaxLength"},
+    "lineMinLength": {
+        "@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#lineMinLength"}
+
 }
 
 CONTEXT = {
@@ -1208,5 +1219,8 @@ CONTEXT = {
     "presentsRhyme": {
         "@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#presentsRhyme",
         "@type": "@id"},
-    "hasAgent": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-core#hasAgent"}
+    "hasAgent": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-core#hasAgent"},
+    "syllabicMetricalLength": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#syllabicMetricalLength"},
+    "lineMaxLength": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#lineMaxLength"},
+    "lineMinLength": {"@id": "http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#lineMinLength"}
 }
