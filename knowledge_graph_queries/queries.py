@@ -207,7 +207,7 @@ CONSTRUCT{
   
   	?dedication_redaction pdc:title ?dedication.
     
-    ?poeticWork  pdc:roleFunction ?role;
+    ?poeticWork  pdc:roleFunction ?roleLabel;
         pdc:title ?title;
         pdc:date ?date;
 }
@@ -225,6 +225,8 @@ WHERE{
     
     ?agentRole pdc:roleFunction ?role;
         pdc:hasAgent ?author.
+        
+    ?role rdfs:label ?roleLabel.
     
     ?poeticWork pdc:title ?title.
   
@@ -377,7 +379,7 @@ CONSTRUCT{
   	?pw_is_synthesis pdc:title ?pw_is_synthesis_title.
     
     ?ag pdc:hasAgent ?pw_agent;
-        pdc:roleFunction ?pw_rf.
+        pdc:roleFunction ?pw_role.
     
     ?pw_agent pdc:name ?pw_agent_name.
     
