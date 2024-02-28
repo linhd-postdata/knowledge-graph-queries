@@ -5,6 +5,34 @@ from urllib.parse import unquote
 import json
 from pyld import jsonld
 from knowledge_graph_queries.queries import QUERIES, CONTEXT, CONTEXT_QUERY
+from SPARQLWrapper import SPARQLWrapper, JSONLD
+
+
+def send_query(query, sparql):
+    sparql.setQuery(query)
+    sparql.setReturnFormat(JSONLD)
+    try:
+        result = sparql.queryAndConvert().serialize(format='json-ld', indent=4)
+        result = json.loads(result)
+    except Exception as e:
+        print('error')
+        result = [f'output error: {e}']
+    return result if result else 'none'
+
+
+def get_authors():
+    """ Method corresponding to the poeticWorks endpoint
+
+    :return: JSON with the list of all poeticWorks in the knowledge graph
+    """
+    query = QUERIES['authors']
+    sparql = connect_to_database()
+    result = send_query(query, sparql)
+    result = jsonld.compact(result, CONTEXT)
+    result = result.get("@graph")
+    return result
+
+
 
 
 def get_poeticWorks():
@@ -12,13 +40,12 @@ def get_poeticWorks():
 
     :return: JSON with the list of all poeticWorks in the knowledge graph
     """
-    conn = get_db()
     query = QUERIES['poeticWorks']
-    results = conn.graph(query, content_type=stardog.content_types.LD_JSON)
-    jsonld_results = json.loads(results)
-    compacted = jsonld.compact(jsonld_results, CONTEXT)
-    graph = compacted.get("@graph")
-    return graph
+    sparql = connect_to_database()
+    result = send_query(query, sparql)
+    result = jsonld.compact(result, CONTEXT)
+    result = result.get("@graph")
+    return result
 
 
 def get_poeticWork(title, limit=10):
@@ -30,27 +57,27 @@ def get_poeticWork(title, limit=10):
     :type limit: int
     :return: JSON with the list of poeticWorks with matching title in the knowledge graph
     """
-    title = unquote(title)
-    conn = get_db()
-    query = QUERIES['poeticWork'].replace('$*', title + '*').replace('$limit', str(limit))
-    results = conn.graph(query, content_type=stardog.content_types.LD_JSON)
-    jsonld_results = json.loads(results)
-    compacted = jsonld.compact(jsonld_results, CONTEXT)
-    # return process_jsonld(results)
-    graph = compacted.get("@graph")
-    return graph
+    query = QUERIES['poeticWork']
+    if (name_len:=len(title)) < 4:
+        query = query.replace("$*", title).replace("$limit", str(limit))
+    else:
+        query = query.replace("$*", f"{title}*").replace("$limit", str(limit))
+    sparql = connect_to_database()
+    result = send_query(query, sparql)
+    result = jsonld.compact(result, CONTEXT)
+    del result["@context"]
+    return result
 
 
-def get_authors():
+def get_authors_old():
     """ Method corresponding to the authors endpoint
 
     :return: JSON with the list of all authors in the knowledge graph
     """
     conn = get_db()
     query = QUERIES['authors']
-    results = conn.graph(query, content_type=stardog.content_types.LD_JSON)
-    jsonld_results = json.loads(results)
-    compacted = jsonld.compact(jsonld_results, CONTEXT)
+    result = conn.graph(query, content_type=stardog.content_types.LD_JSON)
+    compacted = jsonld.compact(result, CONTEXT)
     graph = compacted.get("@graph")
     return graph
 
@@ -65,14 +92,17 @@ def get_author(name, limit=10):
     :return JSON with the list of all authors with matching names in the knowledge graph
     """
     name = unquote(name)
-    conn = get_db()
-    query = QUERIES['author'].replace('$*', name + '*').replace('$limit', str(limit))
-    results = conn.graph(query, content_type=stardog.content_types.LD_JSON)
-    jsonld_results = json.loads(results)
-    compacted = jsonld.compact(jsonld_results, CONTEXT)
+    query = QUERIES['author']
+    if (name_len:=len(name)) < 4:
+        query = query.replace("$*", name).replace("$limit", str(limit))
+    else:
+        query = query.replace("$*", f"{name}*").replace("$limit", str(limit))
+    sparql = connect_to_database()
+    result = send_query(query, sparql)
+    compacted = jsonld.compact(result, CONTEXT)
     # return process_jsonld(results)
-    graph = compacted.get("@graph")
-    return graph
+    del compacted["@context"]
+    return compacted
 
 
 def get_author_profile(uri):
@@ -83,10 +113,10 @@ def get_author_profile(uri):
     :return JSON with personal information and associated poetic works
     """
     query = QUERIES['author_profile'].replace('$', uri)
-    conn = get_db()
-    results = conn.graph(query, content_type=stardog.content_types.LD_JSON)
-    json_ld_result = json.loads(results)
-    framed = jsonld.frame(json_ld_result,
+    sparql = connect_to_database()
+    
+    result = send_query(query, sparql)
+    framed = jsonld.frame(result,
         {
             "http://postdata.linhd.uned.es/ontology/postdata-core#works": {
                 "@embed": "@always"
@@ -100,6 +130,22 @@ def get_author_profile(uri):
 
 
 def get_redactions(uri):
+    query = QUERIES['redactions'].replace('$', uri)
+    sparql = connect_to_database()
+    
+    result = send_query(query, sparql)
+    framed = jsonld.frame(result, {
+        "http://postdata.linhd.uned.es/ontology/postdata-core#isRealisedThrough" : {
+            "@embed": "@always"
+        }
+    })
+    compacted = jsonld.compact(framed, CONTEXT)
+    del compacted["@context"]
+    return compacted
+
+
+
+def get_redactions_old(uri):
     """Method to return all the redactions or editions of a particular poetic
     work
 
@@ -137,11 +183,11 @@ def get_scansion(uri):
     """
     query = QUERIES['scansion_query'].replace('$', uri)
     # print(query)
-    conn = get_db()
-    results = conn.graph(query, content_type=stardog.content_types.LD_JSON)
-    json_ld_result = json.loads(results)
+    sparql = connect_to_database()
+    
+    result = send_query(query, sparql)
     # print(json.dumps(json_ld_result, indent=2))
-    framed = jsonld.frame(json_ld_result, json.loads("""{
+    framed = jsonld.frame(result, json.loads("""{
     	"http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#stanzaList": {
     		"@embed": "@always",
     		"http://postdata.linhd.uned.es/ontology/postdata-poeticAnalysis#lineList": {
@@ -185,7 +231,7 @@ def get_book(title, limit):
     return {'TODO': '?'}
 
 
-def connect_to_database(host="http://triplestore", port=5820):
+def connect_to_database(host="https://poetry.linhd.uned.es", port=5820):
     """ Establish connection with knowledge graph
 
     :param host: name of the service in docker-compose.yml
@@ -195,28 +241,11 @@ def connect_to_database(host="http://triplestore", port=5820):
     :return: stardog.Connection with knowledge graph
     """
     connection_details = {
-        'endpoint': f"{host}:{port}",
-        'username': 'admin',
-        'password': 'LuckyLuke99'
+        'endpoint': 'https://poetry.linhd.uned.es/sparql:5820',
     }
-    # database_name = "PD_KG_SPA"
-    database_name = "PD_KG"
-    with stardog.Admin(**connection_details) as admin:
-        if database_name in [db.name for db in admin.databases()]:
-            return stardog.Connection(database_name, **connection_details)
-        else:
-            raise Exception(f"No database with the name: {database_name}")
-
-
-def get_db():
-    """ Checks if the connection in the application context (request) is established,
-    if yes returns existing connection, if not creates a new connection and returns it
-
-    :return: existing or new stardog.Connection with knowledge graph
-    """
-    if 'db' not in g:
-        g.db = connect_to_database()
-    return g.db
+    sparql = SPARQLWrapper("http://poetry.linhd.uned.es:5820/sparql")
+    sparql.setTimeout(100)
+    return sparql
 
 
 def process_jsonld(results):

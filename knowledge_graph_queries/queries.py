@@ -10,8 +10,6 @@ CONSTRUCT{
         pdc:date ?date.
 }
 
-# FROM <tag:stardog:api:context:local>
-
 WHERE {
     ?work pdc:title ?title.
     ?work a pdc:PoeticWork.
@@ -32,21 +30,18 @@ WHERE {
     'poeticWork':
     '''
         PREFIX pdc: <http://postdata.linhd.uned.es/ontology/postdata-core#>
-        PREFIX fts: <tag:stardog:api:search:>
         PREFIX kos: <http://postdata.linhd.uned.es/kos/>
 
         # Construct includes properties that are not in the ontology, but used to put names to the keys
         CONSTRUCT {
-            ?work   pdc:score ?score;
+            ?work   pdc:score ?sc;
                     pdc:name ?resultText;
                     pdc:author ?creator;
                     pdc:date ?date.
         }
-        
-        # FROM <tag:stardog:api:context:local>
-        
+                
         WHERE{
-            SELECT ?work ?score ?resultText ?creator ?date WHERE {
+            SELECT ?work ?sc ?resultText ?creator ?date WHERE {
 
                 ?work pdc:title ?resultText.
                 ?work a pdc:PoeticWork.
@@ -62,16 +57,11 @@ WHERE {
                     ?sp pdc:date ?date.
                 }
 
-                service fts:textMatch {
-                    [] fts:query "$*" ;  # Replace $ by query
-                        # fts:limit 10;
-                        fts:score ?score ;
-                        fts:result ?resultText .
-                }
+                ?resultText bif:contains '"$*"' option (score ?sc).
 
             }
         }
-        order by desc(?score)
+        order by desc(?sc)
         limit $limit
 
     ''',
@@ -87,7 +77,6 @@ CONSTRUCT {
         pdc:birthPlace  ?birthPlaceLabel.
 }
 
-# FROM <tag:stardog:api:context:local>
 
 WHERE{
     ?person a pdc:Person;
@@ -121,11 +110,10 @@ WHERE{
     ''',
     'author':
     '''
-        prefix fts: <tag:stardog:api:search:>
         prefix pdc: <http://postdata.linhd.uned.es/ontology/postdata-core#>
 
         CONSTRUCT {
-            ?person pdc:score ?score;
+            ?person pdc:score ?sc;
                 pdc:name ?resultText;
                 pdc:birthDate ?birthDate;
                 pdc:deathDate ?deathDate;
@@ -134,18 +122,11 @@ WHERE{
                 
         }
         
-        # FROM <tag:stardog:api:context:local>
         
         WHERE {
             ?person pdc:name ?resultText.
             ?person a pdc:Person.
-            service fts:textMatch {
-            # Operator * - https://docs.stardog.com/archive/7.5.0/query-stardog/full-text-search.html
-                [] fts:query "$*" ;  # Replace $ sign by the query string
-                    fts:score ?score ;
-                    fts:result ?resultText ;
-                    # fts:limit 10 ;
-            }
+            ?resultText bif:contains '"$*"' option (score ?sc).
             OPTIONAL{
                 ?birth pdc:broughtIntoLife ?person;
                 pdc:hasTimeSpan ?birthSpan.
@@ -167,7 +148,7 @@ WHERE{
                 ?deathPlace rdfs:label ?deathPlaceLabel.
             }
         }
-        order by desc(?score)
+        order by desc(?sc)
         limit 10
     ''',
     'author_profile':
@@ -209,10 +190,8 @@ CONSTRUCT{
     
     ?poeticWork  pdc:roleFunction ?roleLabel;
         pdc:title ?title;
-        pdc:date ?date;
+        pdc:date ?date.
 }
-
-# FROM <tag:stardog:api:context:local>
 
 WHERE{
     BIND (<$> AS ?author).
@@ -293,7 +272,7 @@ WHERE{
     }
 
     OPTIONAL{
-        ?agentRole pdc:authorEducationLevel ?education_level; 
+        ?agentRole pdc:authorEducationLevel ?education_level.
     }    
         OPTIONAL{
         ?author pdc:portrait ?portrait.
@@ -312,7 +291,7 @@ WHERE{
     }
         OPTIONAL{
         ?author pdc:ethnicity ?etn.
-        ?etn rdfs:label ?ethnicity
+        ?etn rdfs:label ?ethnicity.
     }
         OPTIONAL{
         ?author pdc:gender ?gen.
@@ -429,7 +408,6 @@ CONSTRUCT{
     ?sc_contributor pdc:name ?sc_agent_name;
         pdc:roleFunction ?sc_role.
 }
-# FROM <tag:stardog:api:context:local>
 WHERE
 {
     BIND (<$> AS ?poetic_work)
@@ -730,7 +708,7 @@ WHERE{
     	?word pdp:partOfSpeech ?partOfSpeech.
   	}
         	OPTIONAL{
-    	?word pdp:translation ?translation
+    	?word pdp:translation ?translation.
   	}
   	OPTIONAL{
     	?line pdp:accentedVowelsPattern ?accentedVowelsPattern.

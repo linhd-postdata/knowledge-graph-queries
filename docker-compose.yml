@@ -1,16 +1,16 @@
 version: "3"
 
 services:
-  triplestore:
-    build: ./postdata-stardog
-    image: linhdpostdata/postdata-stardog:latest
-    volumes:
-      - ./postdata-stardog/stardog:/stardog
-    ports:
-      - "5820:5820"
-    restart: on-failure
-    environment:
-      STARDOG_ADMIN_PASSWORD: "LuckyLuke99"
+#  triplestore:
+#    build: ./postdata-stardog
+#    image: linhdpostdata/postdata-stardog:latest
+#    volumes:
+#      - ./postdata-stardog/stardog:/stardog
+#    ports:
+#      - "5820:5820"
+#    restart: on-failure
+#    environment:
+#      STARDOG_ADMIN_PASSWORD: "LuckyLuke99"
 
   swagger:
     build: ./knowledge-graph-queries
@@ -19,7 +19,7 @@ services:
       - ./knowledge-graph-queries/knowledge_graph_queries:/usr/src/app/knowledge_graph_queries
     ports:
       - "5005:5005"
-    depends_on:
-      - triplestore
+#    depends_on:
+#      - triplestore
 volumes:
   stardog: {}

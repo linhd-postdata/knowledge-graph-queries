@@ -3,13 +3,11 @@ info:
   title: POSTDATA knowledge graph query system
   license:
     name: Apache 2.0
-    url: http://www.apache.org/licenses/LICENSE-2.0.html
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
   version: "0.0.1"
 servers:
-  - url: /
-    description: Production server
-  - url: http://localhost:5000/
-    description: Test server
+  - url: https://sd-0d6bd678.stardog.cloud:5820
+    description: Stardog cloud
 paths:
   /book/{title}:
     get:

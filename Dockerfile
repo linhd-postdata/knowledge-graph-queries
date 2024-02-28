@@ -6,11 +6,12 @@ RUN apt update -y &&\
     apt install -y python3-pip python3-dev gunicorn build-essential libssl-dev libffi-dev python3-setuptools &&\
     pip install -U pip
 WORKDIR /usr/src/app
-RUN pip install Flask-Cors pystardog uwsgi gunicorn
+RUN pip install Flask-Cors "pystardog==0.9.10" uwsgi gunicorn
 COPY requirements.txt setup.py setup.cfg ./
 # RUN pip install Cython
-# RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 # RUN pip install --no-cache-dir gunicorn
+RUN pip install "markupsafe==2.0.1"
 COPY knowledge_graph_queries ./knowledge_graph_queries
 RUN pip install -e .
 EXPOSE $PORT
